@@ -958,6 +958,7 @@ function closeAdminModal() { document.getElementById('adminModalBg').style.displ
 document.getElementById('adminPwBtn').addEventListener('click', checkAdminPw);
 document.getElementById('adminCancelBtn').addEventListener('click', closeAdminModal);
 document.getElementById('adminPwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') checkAdminPw(); });
+document.getElementById('tab-picks').addEventListener('click', function(){ showPanel('picks', this); });
 document.getElementById('tab-entries').addEventListener('click', function(){ showPanel('entries', this); });
 document.getElementById('tab-leaderboard').addEventListener('click', function(){ showPanel('leaderboard', this); });
 document.getElementById('adminTab').addEventListener('click', function(){ requestAdmin(this); });
