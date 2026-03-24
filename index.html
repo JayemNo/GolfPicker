@@ -876,6 +876,8 @@ async function togglePaid(i, paid) {
     try { await api('setPaid', { name: entries[i].name, paid }); } catch(e) { console.error(e); }
   }
 }
+
+async function removeEntry(i) {
   const name = entries[i].name;
   if (!confirm(`Remove entry for "${name}"?`)) return;
   if (isConfigured()) {
