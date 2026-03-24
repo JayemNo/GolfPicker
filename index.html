@@ -149,10 +149,10 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
 </div>
 
 <div class="nav-tabs">
-  <button class="nav-tab active" onclick="showPanel('picks',this)">📋 Submit Picks</button>
-  <button class="nav-tab" onclick="showPanel('entries',this)">👥 All Entries</button>
-  <button class="nav-tab" onclick="showPanel('leaderboard',this)">🏆 Leaderboard</button>
-  <button class="nav-tab" id="adminTab" onclick="requestAdmin(this)" style="display:none;">⚙️ Admin</button>
+  <button class="nav-tab active" id="tab-picks">📋 Submit Picks</button>
+  <button class="nav-tab" id="tab-entries">👥 All Entries</button>
+  <button class="nav-tab" id="tab-leaderboard">🏆 Leaderboard</button>
+  <button class="nav-tab" id="adminTab" style="display:none;">⚙️ Admin</button>
 </div>
 
 <!-- ADMIN PASSWORD MODAL -->
@@ -160,11 +160,11 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
   <div style="background:white;border-radius:14px;padding:32px 28px;max-width:360px;width:92%;box-shadow:0 12px 48px rgba(26,71,49,0.35);">
     <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--green);margin-bottom:8px;">🔒 Admin Access</div>
     <p style="font-size:0.9rem;color:var(--text-mid);margin-bottom:18px;">Enter the admin password to continue.</p>
-    <input type="password" id="adminPwInput" class="plain-input" placeholder="Password" style="width:100%;margin-bottom:14px;" onkeydown="if(event.key==='Enter')checkAdminPw()">
+    <input type="password" id="adminPwInput" class="plain-input" placeholder="Password" style="width:100%;margin-bottom:14px;">
     <div id="adminPwError" style="color:#b94040;font-size:0.9rem;margin-bottom:10px;display:none;">Incorrect password.</div>
     <div style="display:flex;gap:10px;">
-      <button class="btn btn-gold" onclick="checkAdminPw()" style="flex:1;">Unlock</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeAdminModal()">Cancel</button>
+      <button class="btn btn-gold" id="adminPwBtn" style="flex:1;">Unlock</button>
+      <button class="btn btn-ghost btn-sm" id="adminCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -953,6 +953,13 @@ function checkAdminPw() {
 function closeAdminModal() { document.getElementById('adminModalBg').style.display = 'none'; }
 
 // ── INIT ──
+document.getElementById('adminPwBtn').addEventListener('click', checkAdminPw);
+document.getElementById('adminCancelBtn').addEventListener('click', closeAdminModal);
+document.getElementById('adminPwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') checkAdminPw(); });
+document.getElementById('tab-entries').addEventListener('click', function(){ showPanel('entries', this); });
+document.getElementById('tab-leaderboard').addEventListener('click', function(){ showPanel('leaderboard', this); });
+document.getElementById('adminTab').addEventListener('click', function(){ requestAdmin(this); });
+
 buildPickForm();
 showSetupBanner('setupBannerPicks');
 applyLockToForm();
