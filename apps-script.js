@@ -43,7 +43,7 @@ const SHEET_NAME_CONFIG  = 'Config';
 const ENTRY_HEADERS = [
   'name','email','winner','score','margin','lowRound',
   'p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12',
-  'ts'
+  'ts','paid'
 ];
 
 // ── Sheet helpers ──────────────────────────────────────────────
@@ -94,7 +94,8 @@ function getAllEntries() {
     margin:   Number(r[4]),
     lowRound: Number(r[5]),
     places:   [r[6],r[7],r[8],r[9],r[10],r[11],r[12],r[13],r[14],r[15],r[16]],
-    ts:       r[17]
+    ts:       r[17],
+    paid:     r[18] === true || r[18] === 'TRUE' || r[18] === 'true'
   }));
 }
 
@@ -111,7 +112,7 @@ function entryToRow(e) {
   return [
     e.name, e.email, e.winner, e.score, e.margin, e.lowRound,
     ...(e.places || []),
-    e.ts
+    e.ts, e.paid || false
   ];
 }
 
@@ -140,7 +141,7 @@ function doPost(e) {
     else if (action === 'clearEntries')result = handleClearEntries();
     else if (action === 'setResults')  result = handleSetResults(body.results);
     else if (action === 'setLocked')   result = handleSetLocked(body.locked);
-    else if (action === 'setPlayers')  result = handleSetPlayers(body.players);
+    else if (action === 'setPaid')     result = handleSetPaid(body.name, body.paid);
     else result = { error: 'Unknown action: ' + action };
   } catch(err) {
     result = { error: err.message };
@@ -211,5 +212,15 @@ function handleSetLocked(locked) {
 
 function handleSetPlayers(players) {
   setConfig('players', JSON.stringify(players || []));
+  return { ok: true };
+}
+
+function handleSetPaid(name, paid) {
+  if (!name) return { ok: false, error: 'Missing name' };
+  const sheet = entriesSheet();
+  const row = rowForName(name);
+  if (row < 0) return { ok: false, error: 'Entry not found' };
+  // paid is column 19 (index 18, 1-based = 19)
+  sheet.getRange(row, 19).setValue(paid ? true : false);
   return { ok: true };
 }
