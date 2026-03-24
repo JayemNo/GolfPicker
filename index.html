@@ -724,14 +724,25 @@ function renderLeaderboard() {
     const pot = paidCount * 10;
     const pending = (entries.length - paidCount) * 10;
     const potBar = entries.length > 0 ? `<div style="padding:12px 20px;background:linear-gradient(135deg,#1a4731,#245c3e);border-bottom:2px solid var(--gold);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:var(--gold-light);">$${pot}</strong>${pending > 0 ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">+ $${pending} pending</span>` : ''}</span>
+      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:var(--gold-light);">$${pot}</strong></span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥇 $${Math.floor(pot*0.7)}</span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥈 $${Math.floor(pot*0.2)}</span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥉 $${Math.floor(pot*0.1)}</span>
     </div>` : '';
-    lb.innerHTML = potBar + entries.map((e,i) =>
-      `<div class="lb-row"><div class="lb-rank" style="color:var(--text-light)">${i+1}</div><div class="lb-name">${esc(e.name)}${e.paid ? ' <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span>' : ' <span style="background:#fff0f0;border:1px solid #f5c6cb;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--wrong);font-weight:600;margin-left:6px;">UNPAID</span>'}</div><div class="lb-pts" style="color:var(--text-light);font-size:0.9rem;">—</div><div class="lb-breakdown">${esc(e.ts||'')}</div></div>`
+    const paidEntries = entries.filter(e => e.paid);
+    const unpaidEntries = entries.filter(e => !e.paid);
+    const paidRows = paidEntries.map((e,i) =>
+      `<div class="lb-row"><div class="lb-rank" style="color:var(--text-light)">${i+1}</div><div class="lb-name">${esc(e.name)} <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span></div><div class="lb-pts" style="color:var(--text-light);font-size:0.9rem;">—</div><div class="lb-breakdown">${esc(e.ts||'')}</div></div>`
     ).join('');
+    const unpaidSection = unpaidEntries.length ? `
+      <div style="padding:10px 20px;background:#3d1a1a;border-top:2px solid #8b2020;display:flex;align-items:center;gap:10px;">
+        <span style="color:rgba(255,200,200,0.7);font-size:0.9rem;">⏳ Awaiting Payment</span>
+        <span style="background:rgba(180,60,60,0.25);border:1px solid rgba(180,60,60,0.4);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#f5a0a0;font-weight:600;">$${pending} pending</span>
+      </div>
+      ${unpaidEntries.map((e,i) =>
+        `<div class="lb-row" style="opacity:0.65;"><div class="lb-rank" style="color:var(--text-light)">${i+1}</div><div class="lb-name">${esc(e.name)} <span style="background:#fff0f0;border:1px solid #f5c6cb;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--wrong);font-weight:600;margin-left:6px;">UNPAID</span></div><div class="lb-pts" style="color:var(--text-light);font-size:0.9rem;">—</div><div class="lb-breakdown">${esc(e.ts||'')}</div></div>`
+      ).join('')}` : '';
+    lb.innerHTML = potBar + paidRows + unpaidSection;
     return;
   }
   lbNotice.style.display = 'none';
@@ -756,17 +767,33 @@ function renderLeaderboard() {
   })).sort((a,b) => b.total !== a.total ? b.total - a.total : a.marginDiff - b.marginDiff);
 
   const prizeBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px;background:linear-gradient(135deg,#1a4731,#245c3e);border-bottom:2px solid var(--gold);">
-    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:var(--gold-light);">$${pot}</strong>${pending > 0 ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">+ $${pending} pending</span>` : ''}</span>
+    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:var(--gold-light);">$${pot}</strong></span>
     ${prizes.map((p,i)=>`<span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:4px 12px;font-size:0.9rem;color:var(--gold-light);font-weight:600;">${medals[i]} $${p}</span>`).join('')}
   </div>`;
-  lb.innerHTML = prizeBar + scored.map((s,i) =>
+  const paidScored = scored.filter(s => s.paid);
+  const unpaidScored = scored.filter(s => !s.paid);
+  const paidRows = paidScored.map((s,i) =>
     `<div class="lb-row ${i<3?'r'+(i+1):''}">
       <div class="lb-rank">${medals[i]||i+1}</div>
-      <div class="lb-name">${esc(s.name)}${i<3?` <span style="font-size:0.85rem;color:var(--gold);font-weight:700;margin-left:6px;">$${prizes[i]||0}</span>`:''}${s.paid ? ' <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span>' : ' <span style="background:#fff0f0;border:1px solid #f5c6cb;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--wrong);font-weight:600;margin-left:6px;">UNPAID</span>'}</div>
+      <div class="lb-name">${esc(s.name)}${i<3?` <span style="font-size:0.85rem;color:var(--gold);font-weight:700;margin-left:6px;">$${prizes[i]||0}</span>`:''} <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span></div>
       <div class="lb-pts">${s.total}</div>
       <div class="lb-breakdown">W:${s.w} · S:${s.s} · R:${s.r} · Pos:${s.p}${results.margin!=null?' · Margin off:'+s.marginDiff:''}</div>
     </div>`
   ).join('');
+  const unpaidSection = unpaidScored.length ? `
+    <div style="padding:10px 20px;background:#3d1a1a;border-top:2px solid #8b2020;display:flex;align-items:center;gap:10px;">
+      <span style="color:rgba(255,200,200,0.7);font-size:0.9rem;">⏳ Awaiting Payment</span>
+      <span style="background:rgba(180,60,60,0.25);border:1px solid rgba(180,60,60,0.4);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#f5a0a0;font-weight:600;">$${pending} pending</span>
+    </div>
+    ${unpaidScored.map((s,i) =>
+      `<div class="lb-row" style="opacity:0.65;">
+        <div class="lb-rank" style="color:var(--text-light)">${i+1}</div>
+        <div class="lb-name">${esc(s.name)} <span style="background:#fff0f0;border:1px solid #f5c6cb;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--wrong);font-weight:600;margin-left:6px;">UNPAID</span></div>
+        <div class="lb-pts">${s.total}</div>
+        <div class="lb-breakdown">W:${s.w} · S:${s.s} · R:${s.r} · Pos:${s.p}${results.margin!=null?' · Margin off:'+s.marginDiff:''}</div>
+      </div>`
+    ).join('')}` : '';
+  lb.innerHTML = prizeBar + paidRows + unpaidSection;
 }
 
 // ── ADMIN ──
