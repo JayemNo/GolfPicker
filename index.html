@@ -267,6 +267,7 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
 
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
             <button class="btn btn-gold" id="submitBtn" onclick="submitPicks()">⛳ Submit My Picks</button>
+            <button class="btn btn-ghost btn-sm" onclick="autoPick()">🎲 Auto Pick</button>
             <button class="btn btn-ghost btn-sm" onclick="clearForm()">Clear</button>
           </div>
         </div><!-- end pickFormBody -->
@@ -617,6 +618,29 @@ function clearForm() {
   ['winner', ...PLACE_LABELS.map((_,i) => `place${i}`)].forEach(k => combos[k]?.reset());
 }
 
+function autoPick() {
+  // Shuffle a copy of the player list and pick 13 unique players
+  const pool = [...players].sort(() => Math.random() - 0.5);
+  const winner = pool[0];
+  const rest = pool.slice(1, 12); // 11 players for 2nd–12th
+
+  combos['winner'].setValue(winner);
+  rest.forEach((p, i) => combos[`place${i}`].setValue(p));
+
+  // Reasonable score: Masters winners typically finish -10 to -20 vs par
+  const score = -(Math.floor(Math.random() * 11) + 10);
+  document.getElementById('pick-score').value = score;
+
+  // Reasonable winning margin: 1–8 strokes, weighted toward 1–4
+  const margins = [1,1,1,2,2,2,2,3,3,3,4,4,5,6,7,8];
+  const margin = margins[Math.floor(Math.random() * margins.length)];
+  document.getElementById('pick-margin').value = margin;
+
+  // Reasonable lowest round: 62–68
+  const lowRound = Math.floor(Math.random() * 7) + 62;
+  document.getElementById('pick-lowround').value = lowRound;
+}
+
 async function loadExistingPicks() {
   const name = document.getElementById('lookupName').value.trim();
   const msg = document.getElementById('lookupMsg');
@@ -696,9 +720,11 @@ function renderLeaderboard() {
 
   if (!results) {
     lbNotice.style.display = '';
-    const pot = entries.length * 10;
-    const potBar = pot > 0 ? `<div style="padding:12px 20px;background:linear-gradient(135deg,#1a4731,#245c3e);border-bottom:2px solid var(--gold);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:var(--gold-light);">$${pot}</strong></span>
+    const paidCount = entries.filter(e => e.paid).length;
+    const pot = paidCount * 10;
+    const pending = (entries.length - paidCount) * 10;
+    const potBar = entries.length > 0 ? `<div style="padding:12px 20px;background:linear-gradient(135deg,#1a4731,#245c3e);border-bottom:2px solid var(--gold);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:var(--gold-light);">$${pot}</strong>${pending > 0 ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">+ $${pending} pending</span>` : ''}</span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥇 $${Math.floor(pot*0.7)}</span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥈 $${Math.floor(pot*0.2)}</span>
       <span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:var(--gold-light);">🥉 $${Math.floor(pot*0.1)}</span>
@@ -709,7 +735,9 @@ function renderLeaderboard() {
     return;
   }
   lbNotice.style.display = 'none';
-  const pot = entries.length * 10;
+  const paidCount = entries.filter(e => e.paid).length;
+  const pot = paidCount * 10;
+  const pending = (entries.length - paidCount) * 10;
   const prizes = [Math.floor(pot*0.7), Math.floor(pot*0.2), Math.floor(pot*0.1)];
   const medals = ['🥇','🥈','🥉'];
   const scored = entries.map(e => ({
@@ -728,7 +756,7 @@ function renderLeaderboard() {
   })).sort((a,b) => b.total !== a.total ? b.total - a.total : a.marginDiff - b.marginDiff);
 
   const prizeBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px;background:linear-gradient(135deg,#1a4731,#245c3e);border-bottom:2px solid var(--gold);">
-    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:var(--gold-light);">$${pot}</strong></span>
+    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:var(--gold-light);">$${pot}</strong>${pending > 0 ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">+ $${pending} pending</span>` : ''}</span>
     ${prizes.map((p,i)=>`<span style="background:rgba(201,168,76,0.18);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:4px 12px;font-size:0.9rem;color:var(--gold-light);font-weight:600;">${medals[i]} $${p}</span>`).join('')}
   </div>`;
   lb.innerHTML = prizeBar + scored.map((s,i) =>
