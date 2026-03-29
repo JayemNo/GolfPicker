@@ -146,6 +146,7 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
   <div class="header-badge">Augusta · April 9–12, 2026</div>
   <h1>Masters <span>Pick'em</span></h1>
   <p>Rory McIlroy defends · $10 entry · 1st 70% · 2nd 20% · 3rd 10%</p>
+  <div id="mastersCountdown" style="margin-top:12px;font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4vw,2rem);font-weight:700;color:#fff;letter-spacing:0.04em;text-shadow:0 0 18px rgba(201,168,76,0.7),0 2px 6px rgba(0,0,0,0.4);"></div>
 </div>
 
 <div class="nav-tabs">
@@ -1024,6 +1025,24 @@ applyLockToForm();
 if (new URLSearchParams(window.location.search).has('admin')) {
   document.getElementById('adminTab').style.display = '';
 }
+function updateCountdown() {
+  const el = document.getElementById('mastersCountdown');
+  if (!el) return;
+  const now = new Date();
+  const start = new Date('2026-04-09T00:00:00');
+  const end   = new Date('2026-04-12T23:59:59');
+  if (now < start) {
+    const days = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
+    el.innerHTML = days === 1 ? '<span style="color:#ff4444">1</span> day to go' : `<span style="color:#ff4444">${days}</span> days to go`;
+  } else if (now <= end) {
+    const day = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+    el.innerHTML = `Day <span style="color:#ff4444">${day}</span> of the Masters`;
+  } else {
+    el.textContent = 'Tournament complete';
+  }
+}
+updateCountdown();
+
 loadAll().then(() => {
   applyLockToForm();
   renderLockStatus();
