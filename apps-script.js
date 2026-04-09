@@ -141,6 +141,7 @@ function doPost(e) {
     else if (action === 'clearEntries')result = handleClearEntries();
     else if (action === 'setResults')  result = handleSetResults(body.results);
     else if (action === 'setLocked')   result = handleSetLocked(body.locked);
+    else if (action === 'setPlayers')  result = handleSetPlayers(body.players);
     else if (action === 'setPaid')     result = handleSetPaid(body.name, body.paid);
     else result = { error: 'Unknown action: ' + action };
   } catch(err) {
@@ -170,8 +171,12 @@ function handleGet() {
   };
 }
 
+const NOTIFY_EMAIL = 'jayemn@gmail.com';
+
 function handleSaveEntry(entry) {
   if (!entry || !entry.name) return { ok: false, error: 'Missing entry name' };
+  const lockedRaw = getConfig('locked');
+  if (lockedRaw === 'true') return { ok: false, error: 'Pool is locked — the Masters has started and picks are closed.' };
   const sheet = entriesSheet();
   const existingRow = rowForName(entry.name);
   const row = entryToRow(entry);
@@ -182,6 +187,29 @@ function handleSaveEntry(entry) {
   } else {
     sheet.appendRow(row);
   }
+
+  try {
+    const action = updated ? 'updated' : 'submitted';
+    const places = (entry.places || []).map((p, i) => `  P${i + 2}: ${p || '—'}`).join('\n');
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      subject: `Masters Pick'em: ${entry.name} ${action} their picks`,
+      body: [
+        `${entry.name} (${entry.email || 'no email'}) just ${action} their picks.`,
+        '',
+        `Winner: ${entry.winner || '—'}`,
+        `Winning score: ${entry.score}`,
+        `Winning margin: ${entry.margin} strokes`,
+        `Lowest round: ${entry.lowRound}`,
+        '',
+        'Places 2–12:',
+        places,
+      ].join('\n')
+    });
+  } catch(e) {
+    // email failure should never break the entry save
+  }
+
   return { ok: true, updated };
 }
 

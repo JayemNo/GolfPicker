@@ -535,6 +535,7 @@ function showPanel(name, tab) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   tab.classList.add('active');
+  if (name === 'picks') { if (isConfigured()) loadAll().then(() => { applyLockToForm(); renderLockStatus(); }); }
   if (name === 'entries') { renderEntries(); if (isConfigured()) loadAll().then(renderEntries); }
   if (name === 'leaderboard') { renderLeaderboard(); if (isConfigured()) loadAll().then(renderLeaderboard); }
   if (name === 'admin') renderAdmin();
