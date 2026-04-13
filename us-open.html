@@ -592,16 +592,55 @@
         }
       }
 
-      .majors-nav { background:#0a0a0a; display:flex; justify-content:center; align-items:center; gap:4px; padding:8px 16px; flex-wrap:wrap; }
-      .majors-nav-label { color:rgba(255,255,255,0.35); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:6px; font-family:'Source Sans 3',sans-serif; }
-      .majors-link { color:rgba(255,255,255,0.5); font-size:0.82rem; font-weight:600; text-decoration:none; padding:4px 12px; border-radius:4px; letter-spacing:0.05em; font-family:'Source Sans 3',sans-serif; transition:color 0.15s, background 0.15s; }
-      .majors-link:hover { color:white; background:rgba(255,255,255,0.08); }
-      .majors-link.active { color:#ffffff; background:rgba(191,10,48,0.35); border-radius:4px; pointer-events:none; }
-      .majors-sep { color:rgba(255,255,255,0.18); font-size:0.8rem; user-select:none; }
+      .majors-nav {
+        background: #0a0a0a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 16px;
+        flex-wrap: wrap;
+        position: relative;
+      }
+      .majors-nav-label {
+        color: rgba(255, 255, 255, 0.35);
+        font-size: 0.75rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-right: 6px;
+        font-family: "Source Sans 3", sans-serif;
+      }
+      .majors-link {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 4px 12px;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+        font-family: "Source Sans 3", sans-serif;
+        transition:
+          color 0.15s,
+          background 0.15s;
+      }
+      .majors-link:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .majors-link.active {
+        color: #ffffff;
+        background: rgba(191, 10, 48, 0.35);
+        border-radius: 4px;
+        pointer-events: none;
+      }
+      .majors-sep {
+        color: rgba(255, 255, 255, 0.18);
+        font-size: 0.8rem;
+        user-select: none;
+      }
     </style>
   </head>
   <body>
-
     <div class="majors-nav">
       <span class="majors-nav-label">2026 Majors</span>
       <a href="index.html" class="majors-link">The Masters</a>
@@ -611,7 +650,18 @@
       <a href="us-open.html" class="majors-link active">US Open</a>
       <span class="majors-sep">·</span>
       <a href="the-open.html" class="majors-link">The Open</a>
-      <a href="?admin" class="majors-link" id="majorsAdminLink" style="margin-left:auto;opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
+      <a
+        href="?admin"
+        class="majors-link"
+        id="majorsAdminLink"
+        style="
+          position: absolute;
+          right: 16px;
+          opacity: 0.4;
+          font-size: 0.78rem;
+        "
+        >⚙ Admin</a
+      >
     </div>
 
     <div class="site-header">
@@ -1370,7 +1420,7 @@
       const SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbwti8iSHVh5wMU4xt33aDEiGTh9qnaiOIFCoeYDoa_qijCRw1B3SnmGMkD4-kxPQtnMdw/exec";
 
-      const ADMIN_PASSWORD = "usopen2026"; // ← change this
+      const ADMIN_PASSWORD = "pga2026"; // ← change this
 
       const DEFAULT_PLAYERS = [
         "Adam Scott",
@@ -2462,11 +2512,16 @@
       buildPickForm();
       showSetupBanner("setupBannerPicks");
       applyLockToForm();
-      const isAdminMode = new URLSearchParams(window.location.search).has("admin");
+      const isAdminMode = new URLSearchParams(window.location.search).has(
+        "admin",
+      );
       if (isAdminMode) {
         document.getElementById("adminTab").style.display = "";
         const al = document.getElementById("majorsAdminLink");
-        if (al) { al.classList.add("active"); al.style.opacity = "1"; }
+        if (al) {
+          al.classList.add("active");
+          al.style.opacity = "1";
+        }
       }
 
       function updateCountdown() {
