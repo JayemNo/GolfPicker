@@ -591,9 +591,28 @@
           font-size: 0.85rem;
         }
       }
+
+      .majors-nav { background:#0a0a0a; display:flex; justify-content:center; align-items:center; gap:4px; padding:8px 16px; flex-wrap:wrap; }
+      .majors-nav-label { color:rgba(255,255,255,0.35); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:6px; font-family:'Source Sans 3',sans-serif; }
+      .majors-link { color:rgba(255,255,255,0.5); font-size:0.82rem; font-weight:600; text-decoration:none; padding:4px 12px; border-radius:4px; letter-spacing:0.05em; font-family:'Source Sans 3',sans-serif; transition:color 0.15s, background 0.15s; }
+      .majors-link:hover { color:white; background:rgba(255,255,255,0.08); }
+      .majors-link.active { color:var(--gold-light); background:rgba(201,168,76,0.12); pointer-events:none; }
+      .majors-sep { color:rgba(255,255,255,0.18); font-size:0.8rem; user-select:none; }
     </style>
   </head>
   <body>
+
+    <div class="majors-nav">
+      <span class="majors-nav-label">2026 Majors</span>
+      <a href="index.html" class="majors-link">The Masters</a>
+      <span class="majors-sep">·</span>
+      <a href="pga-championship.html" class="majors-link">PGA Championship</a>
+      <span class="majors-sep">·</span>
+      <a href="us-open.html" class="majors-link">US Open</a>
+      <span class="majors-sep">·</span>
+      <a href="the-open.html" class="majors-link active">The Open</a>
+    </div>
+
     <div class="site-header">
       <div class="header-badge">Royal Portrush · July 16–19, 2026</div>
       <h1>The Open <span>Pick'em</span></h1>
@@ -2456,6 +2475,15 @@
         }
       }
       updateCountdown();
+
+      // If the tournament is over, hide Submit Picks and open Leaderboard by default
+      if (new Date() > new Date('2026-07-19T23:59:59')) {
+        document.getElementById('tab-picks').style.display = 'none';
+        document.getElementById('panel-picks').classList.remove('active');
+        document.getElementById('tab-picks').classList.remove('active');
+        document.getElementById('tab-leaderboard').classList.add('active');
+        document.getElementById('panel-leaderboard').classList.add('active');
+      }
 
       loadAll().then(() => {
         applyLockToForm();
