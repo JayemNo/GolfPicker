@@ -158,6 +158,7 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
   <a href="us-open.html" class="majors-link">US Open</a>
   <span class="majors-sep">·</span>
   <a href="the-open.html" class="majors-link">The Open</a>
+  <a href="?admin" class="majors-link" id="majorsAdminLink" style="margin-left:auto;opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
 </div>
 
 <div class="site-header">
@@ -1103,9 +1104,14 @@ document.getElementById('adminTab').addEventListener('click', function(){ reques
 buildPickForm();
 showSetupBanner('setupBannerPicks');
 applyLockToForm();
-if (new URLSearchParams(window.location.search).has('admin')) {
+
+const isAdminMode = new URLSearchParams(window.location.search).has('admin');
+if (isAdminMode) {
   document.getElementById('adminTab').style.display = '';
+  const al = document.getElementById('majorsAdminLink');
+  if (al) { al.classList.add('active'); al.style.opacity = '1'; }
 }
+
 function updateCountdown() {
   const el = document.getElementById('mastersCountdown');
   if (!el) return;
@@ -1124,11 +1130,20 @@ function updateCountdown() {
 }
 updateCountdown();
 
-// If the tournament is over, hide Submit Picks and open Leaderboard by default
-if (new Date() > new Date('2026-04-12T23:59:59')) {
+// If the tournament is over, hide Submit Picks
+const tournamentOver = new Date() > new Date('2026-04-12T23:59:59');
+if (tournamentOver) {
   document.getElementById('tab-picks').style.display = 'none';
   document.getElementById('panel-picks').classList.remove('active');
   document.getElementById('tab-picks').classList.remove('active');
+}
+
+// Default active panel: admin (if admin mode), else leaderboard (if over), else picks
+if (isAdminMode) {
+  document.getElementById('panel-picks').classList.remove('active');
+  document.getElementById('tab-picks').classList.remove('active');
+  requestAdmin(document.getElementById('adminTab'));
+} else if (tournamentOver) {
   document.getElementById('tab-leaderboard').classList.add('active');
   document.getElementById('panel-leaderboard').classList.add('active');
 }

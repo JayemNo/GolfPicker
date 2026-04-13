@@ -14,9 +14,9 @@
         --green-mid: #002266;
         --green-light: #003399;
         --gold: #bf0a30;
-        --gold-light: #e01030;
-        --gold-pale: #fff5f6;
-        --off-white: #f5f6fa;
+        --gold-light: #cc1133;
+        --gold-pale: #eef2fb;
+        --off-white: #f4f6fb;
         --white: #ffffff;
         --text: #0a0e1a;
         --text-mid: #2a3a5a;
@@ -60,7 +60,7 @@
       .header-badge {
         display: inline-block;
         border: 1.5px solid var(--gold);
-        color: #ff6080;
+        color: #ffffff;
         font-size: 0.8rem;
         letter-spacing: 0.2em;
         text-transform: uppercase;
@@ -76,7 +76,7 @@
         line-height: 1.05;
       }
       .site-header h1 span {
-        color: #ff6080;
+        color: #ffffff;
       }
       .site-header p {
         color: rgba(255, 255, 255, 0.5);
@@ -110,7 +110,7 @@
         color: rgba(255, 255, 255, 0.85);
       }
       .nav-tab.active {
-        color: #ff6080;
+        color: #ffffff;
         border-bottom-color: var(--gold);
         background: rgba(191, 10, 48, 0.1);
       }
@@ -178,7 +178,7 @@
       }
       .score-badge .pts {
         background: var(--green);
-        color: #ff6080;
+        color: #ffffff;
         border-radius: 4px;
         padding: 2px 8px;
         font-size: 0.82rem;
@@ -375,7 +375,7 @@
       }
       .data-table th {
         background: var(--green);
-        color: #ff6080;
+        color: #ffffff;
         padding: 11px 13px;
         text-align: left;
         font-size: 0.8rem;
@@ -596,7 +596,7 @@
       .majors-nav-label { color:rgba(255,255,255,0.35); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:6px; font-family:'Source Sans 3',sans-serif; }
       .majors-link { color:rgba(255,255,255,0.5); font-size:0.82rem; font-weight:600; text-decoration:none; padding:4px 12px; border-radius:4px; letter-spacing:0.05em; font-family:'Source Sans 3',sans-serif; transition:color 0.15s, background 0.15s; }
       .majors-link:hover { color:white; background:rgba(255,255,255,0.08); }
-      .majors-link.active { color:#ff6080; background:rgba(191,10,48,0.15); pointer-events:none; }
+      .majors-link.active { color:#ffffff; background:rgba(191,10,48,0.35); border-radius:4px; pointer-events:none; }
       .majors-sep { color:rgba(255,255,255,0.18); font-size:0.8rem; user-select:none; }
     </style>
   </head>
@@ -611,6 +611,7 @@
       <a href="us-open.html" class="majors-link active">US Open</a>
       <span class="majors-sep">·</span>
       <a href="the-open.html" class="majors-link">The Open</a>
+      <a href="?admin" class="majors-link" id="majorsAdminLink" style="margin-left:auto;opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
     </div>
 
     <div class="site-header">
@@ -740,7 +741,7 @@
             >
               <div
                 style="
-                  color: #ff6080;
+                  color: #ffffff;
                   font-family: &quot;Playfair Display&quot;, serif;
                   font-size: 1.05rem;
                   font-weight: 700;
@@ -756,7 +757,7 @@
                     border-radius: 6px;
                     padding: 4px 12px;
                     font-size: 0.9rem;
-                    color: #ff6080;
+                    color: #ffffff;
                     font-weight: 600;
                   "
                   >🥇 1st · 70%</span
@@ -768,7 +769,7 @@
                     border-radius: 6px;
                     padding: 4px 12px;
                     font-size: 0.9rem;
-                    color: #ff6080;
+                    color: #ffffff;
                     font-weight: 600;
                   "
                   >🥈 2nd · 20%</span
@@ -780,7 +781,7 @@
                     border-radius: 6px;
                     padding: 4px 12px;
                     font-size: 0.9rem;
-                    color: #ff6080;
+                    color: #ffffff;
                     font-weight: 600;
                   "
                   >🥉 3rd · 10%</span
@@ -1986,10 +1987,10 @@
           const potBar =
             entries.length > 0
               ? `<div style="padding:12px 20px;background:linear-gradient(135deg,#001a4d,#002266);border-bottom:2px solid var(--gold);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:#ff6080;">$${pot}</strong></span>
-      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ff6080;">🥇 $${Math.floor(pot * 0.7)}</span>
-      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ff6080;">🥈 $${Math.floor(pot * 0.2)}</span>
-      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ff6080;">🥉 $${Math.floor(pot * 0.1)}</span>
+      <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">💰 Current Pool: <strong style="color:#ffffff;">$${pot}</strong></span>
+      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ffffff;">🥇 $${Math.floor(pot * 0.7)}</span>
+      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ffffff;">🥈 $${Math.floor(pot * 0.2)}</span>
+      <span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:3px 10px;font-size:0.9rem;color:#ffffff;">🥉 $${Math.floor(pot * 0.1)}</span>
     </div>`
               : "";
           const paidEntries = entries.filter((e) => e.paid);
@@ -2061,8 +2062,8 @@
           );
 
         const prizeBar = `<div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px;background:linear-gradient(135deg,#001a4d,#002266);border-bottom:2px solid var(--gold);">
-    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:#ff6080;">$${pot}</strong></span>
-    ${prizes.map((p, i) => `<span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:4px 12px;font-size:0.9rem;color:#ff6080;font-weight:600;">${medals[i]} $${p}</span>`).join("")}
+    <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;align-self:center;">💰 Prize Pool: <strong style="color:#ffffff;">$${pot}</strong></span>
+    ${prizes.map((p, i) => `<span style="background:rgba(191,10,48,0.18);border:1px solid rgba(191,10,48,0.35);border-radius:6px;padding:4px 12px;font-size:0.9rem;color:#ffffff;font-weight:600;">${medals[i]} $${p}</span>`).join("")}
   </div>`;
         const paidScored = scored.filter((s) => s.paid);
         const unpaidScored = scored.filter((s) => !s.paid);
@@ -2461,8 +2462,11 @@
       buildPickForm();
       showSetupBanner("setupBannerPicks");
       applyLockToForm();
-      if (new URLSearchParams(window.location.search).has("admin")) {
+      const isAdminMode = new URLSearchParams(window.location.search).has("admin");
+      if (isAdminMode) {
         document.getElementById("adminTab").style.display = "";
+        const al = document.getElementById("majorsAdminLink");
+        if (al) { al.classList.add("active"); al.style.opacity = "1"; }
       }
 
       function updateCountdown() {
@@ -2486,13 +2490,19 @@
       }
       updateCountdown();
 
-      // If the tournament is over, hide Submit Picks and open Leaderboard by default
-      if (new Date() > new Date('2026-06-14T23:59:59')) {
-        document.getElementById('tab-picks').style.display = 'none';
-        document.getElementById('panel-picks').classList.remove('active');
-        document.getElementById('tab-picks').classList.remove('active');
-        document.getElementById('tab-leaderboard').classList.add('active');
-        document.getElementById('panel-leaderboard').classList.add('active');
+      const tournamentOver = new Date() > new Date("2026-06-14T23:59:59");
+      if (tournamentOver) {
+        document.getElementById("tab-picks").style.display = "none";
+        document.getElementById("panel-picks").classList.remove("active");
+        document.getElementById("tab-picks").classList.remove("active");
+      }
+      if (isAdminMode) {
+        document.getElementById("panel-picks").classList.remove("active");
+        document.getElementById("tab-picks").classList.remove("active");
+        requestAdmin(document.getElementById("adminTab"));
+      } else if (tournamentOver) {
+        document.getElementById("tab-leaderboard").classList.add("active");
+        document.getElementById("panel-leaderboard").classList.add("active");
       }
 
       loadAll().then(() => {
