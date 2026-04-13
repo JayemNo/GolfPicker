@@ -1,41 +1,49 @@
 // ════════════════════════════════════════════════════════════════
-// MASTERS PICK'EM 2026 — Google Apps Script Backend
+// PGA MAJORS PICK'EM 2026 — Google Apps Script Backend
 // ════════════════════════════════════════════════════════════════
 //
-// SETUP INSTRUCTIONS (do this once):
+// This single script powers all four majors pick'em pools.
+// Each major gets its own Google Sheet + Apps Script deployment.
+//
+// SETUP INSTRUCTIONS (do this once per tournament):
 //
 // 1. Go to sheets.google.com and create a new blank spreadsheet.
-//    Name it something like "Masters Pickem 2026".
+//    Name it e.g. "PGA Championship Pickem 2026".
 //
 // 2. In that spreadsheet, go to Extensions → Apps Script.
 //    Delete all the default code and paste this entire file in.
 //
-// 3. Click Save (the floppy disk icon), name the project anything.
+// 3. Change TOURNAMENT_NAME below to match the tournament.
 //
-// 4. Click Deploy → New Deployment.
+// 4. Click Save (the floppy disk icon), name the project anything.
+//
+// 5. Click Deploy → New Deployment.
 //    - Type: Web App
 //    - Execute as: Me
 //    - Who has access: Anyone
 //    Click Deploy. Google will ask you to authorise — click through.
 //
-// 5. Copy the Web App URL that appears (it looks like:
+// 6. Copy the Web App URL that appears (it looks like:
 //    https://script.google.com/macros/s/ABC123.../exec)
 //
-// 6. Open masters-pickem.html in a text editor.
-//    Find this line near the top of the <script> section:
-//      const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
-//    Replace YOUR_APPS_SCRIPT_URL_HERE with your URL. Save the file.
+// 7. Open the corresponding HTML file (e.g. pga-championship.html)
+//    and paste the URL into the SCRIPT_URL constant at the top.
 //
-// 7. Re-upload masters-pickem.html to Netlify (drag onto netlify.com/drop).
-//
-// That's it! All picks, results, lock state, and player roster now
-// live in your Google Sheet and are shared in real time.
+// 8. Upload the HTML file to GitHub Pages (or your host of choice).
 //
 // The Sheet will have these tabs created automatically:
 //   Entries   — one row per participant
 //   Config    — results, lock state, player roster
 //
 // ════════════════════════════════════════════════════════════════
+
+// ── EDIT THIS for each tournament deployment ──────────────────
+const TOURNAMENT_NAME = "Masters Pick'em 2026";
+// Examples:
+//   "PGA Championship Pick'em 2026"
+//   "US Open Pick'em 2026"
+//   "The Open Championship Pick'em 2026"
+// ─────────────────────────────────────────────────────────────
 
 const SHEET_NAME_ENTRIES = 'Entries';
 const SHEET_NAME_CONFIG  = 'Config';
@@ -193,9 +201,9 @@ function handleSaveEntry(entry) {
     const places = (entry.places || []).map((p, i) => `  P${i + 2}: ${p || '—'}`).join('\n');
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
-      subject: `Masters Pick'em: ${entry.name} ${action} their picks`,
+      subject: `${TOURNAMENT_NAME}: ${entry.name} ${action} their picks`,
       body: [
-        `${entry.name} (${entry.email || 'no email'}) just ${action} their picks.`,
+        `${entry.name} (${entry.email || 'no email'}) just ${action} their picks for ${TOURNAMENT_NAME}.`,
         '',
         `Winner: ${entry.winner || '—'}`,
         `Winning score: ${entry.score}`,
