@@ -414,6 +414,7 @@ let locked = false;
 const combos = {};
 let adminUnlocked = false;
 let pendingAdminTab = null;
+let resultSlotCounts = new Array(11).fill(1); // number of tied players per position slot
 
 // ── API HELPERS ──
 function isConfigured() { return SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE'; }
@@ -515,17 +516,73 @@ function buildPickForm() {
   PLACE_LABELS.forEach((_, i) => { combos[`place${i}`] = createCombo(`combo-place-${i}`, `place${i}`); });
 }
 
+function renderPlaceSlot(i) {
+  const count = resultSlotCounts[i];
+  let rows = '';
+  for (let j = 0; j < count; j++) {
+    rows += `<div style="display:flex;gap:6px;align-items:center;${j < count-1 ? 'margin-bottom:6px' : ''}">
+      <div id="rcombo-place-${i}-${j}" style="flex:1;min-width:0"></div>
+      ${count > 1 ? `<button type="button" onclick="removeTiedPlayer(${i},${j})" style="flex-shrink:0;background:#fff0f0;border:1px solid #f5c6cb;color:#b94040;border-radius:5px;padding:5px 8px;cursor:pointer;font-size:0.85rem;font-weight:600;line-height:1">×</button>` : ''}
+    </div>`;
+  }
+  return `<div class="field result-place-slot" id="place-slot-${i}">
+    <label>${PLACE_LABELS[i]} Place</label>
+    <div id="tied-rows-${i}">${rows}</div>
+    <button type="button" onclick="addTiedPlayer(${i})" style="margin-top:5px;font-size:0.8rem;padding:3px 10px;background:none;border:1px solid var(--border);border-radius:5px;color:var(--text-mid);cursor:pointer">+ Tie</button>
+  </div>`;
+}
+
+function initPlaceSlotCombos(i, vals) {
+  for (let j = 0; j < resultSlotCounts[i]; j++) {
+    combos[`rplace${i}_${j}`] = createCombo(`rcombo-place-${i}-${j}`, `rplace${i}_${j}`);
+    if (vals && vals[j]) combos[`rplace${i}_${j}`].setValue(vals[j]);
+  }
+}
+
+function getPlaceSlotValues(i) {
+  const vals = [];
+  for (let j = 0; j < resultSlotCounts[i]; j++) {
+    vals.push(combos[`rplace${i}_${j}`]?.getValue() || '');
+  }
+  return vals;
+}
+
+function addTiedPlayer(i) {
+  const vals = getPlaceSlotValues(i);
+  resultSlotCounts[i]++;
+  document.getElementById(`place-slot-${i}`).outerHTML = renderPlaceSlot(i);
+  initPlaceSlotCombos(i, vals);
+}
+
+function removeTiedPlayer(i, j) {
+  const vals = getPlaceSlotValues(i);
+  vals.splice(j, 1);
+  resultSlotCounts[i]--;
+  document.getElementById(`place-slot-${i}`).outerHTML = renderPlaceSlot(i);
+  initPlaceSlotCombos(i, vals);
+}
+
 function buildResultForm() {
   combos['rwinner'] = createCombo('result-combo-winner', 'rwinner');
+  // Set slot counts from existing results (handles legacy string or new array format)
+  resultSlotCounts = new Array(11).fill(1);
+  if (results && results.places) {
+    results.places.forEach((p, i) => {
+      if (Array.isArray(p)) resultSlotCounts[i] = Math.max(1, p.length);
+    });
+  }
   const grid = document.getElementById('result-place-combos');
-  grid.innerHTML = PLACE_LABELS.map((label, i) => `<div class="field"><label>${label} Place</label><div id="rcombo-place-${i}"></div></div>`).join('');
-  PLACE_LABELS.forEach((_, i) => { combos[`rplace${i}`] = createCombo(`rcombo-place-${i}`, `rplace${i}`); });
+  grid.innerHTML = PLACE_LABELS.map((_, i) => renderPlaceSlot(i)).join('');
+  PLACE_LABELS.forEach((_, i) => {
+    const existing = results && results.places ? results.places[i] : null;
+    const vals = existing ? (Array.isArray(existing) ? existing : [existing]) : [];
+    initPlaceSlotCombos(i, vals);
+  });
   if (results) {
     combos['rwinner']?.setValue(results.winner);
     document.getElementById('result-score').value = results.score;
     document.getElementById('result-margin').value = results.margin || '';
     document.getElementById('result-lowround').value = results.lowRound;
-    results.places.forEach((p,i) => combos[`rplace${i}`]?.setValue(p));
   }
 }
 
@@ -687,7 +744,7 @@ function renderEntries() {
     let winnerCls = '';
     if (scored) {
       if (e.winner === results.winner) winnerCls = 'pick-correct';
-      else if (results.places && results.places.includes(e.winner)) winnerCls = 'pick-partial';
+      else if (placesIncludesAny(results.places, e.winner)) winnerCls = 'pick-partial';
       else winnerCls = 'pick-wrong';
     }
     let cells = `<td class="name-cell">${esc(e.name)}</td>`;
@@ -698,8 +755,8 @@ function renderEntries() {
     (e.places || []).forEach((p,i) => {
       let cls = '';
       if (scored && results.places) {
-        if (results.places[i] && p === results.places[i]) cls = 'pick-correct';
-        else if (results.places.includes(p)) cls = 'pick-partial';
+        if (placeIncludes(results.places[i], p)) cls = 'pick-correct';
+        else if (placesIncludesAny(results.places, p)) cls = 'pick-partial';
         else cls = 'pick-wrong';
       }
       cells += `<td class="${cls}">${esc(p)}</td>`;
@@ -757,12 +814,12 @@ function renderLeaderboard() {
     name: e.name,
     paid: e.paid || false,
     total: calcScore(e),
-    w: e.winner===results.winner ? 5 : (results.places && results.places.includes(e.winner) ? 1 : 0),
+    w: e.winner===results.winner ? 5 : (placesIncludesAny(results.places, e.winner) ? 1 : 0),
     s: e.score===results.score ? 3 : 0,
     r: e.lowRound===results.lowRound ? 2 : 0,
     p: (e.places||[]).reduce((acc, pick, i) => {
-      if (results.places && results.places[i] && pick === results.places[i]) return acc + 2;
-      if (results.places && results.places.includes(pick)) return acc + 1;
+      if (results.places && placeIncludes(results.places[i], pick)) return acc + 2;
+      if (placesIncludesAny(results.places, pick)) return acc + 1;
       return acc;
     }, 0),
     marginDiff: results.margin != null && e.margin != null ? Math.abs(e.margin - results.margin) : 999
@@ -877,9 +934,9 @@ async function saveResults() {
   if (!winner || scoreVal==='' || !marginVal || isNaN(margin) || !lowRoundVal || isNaN(lowRound)) return alert('Please fill in Winner, Score, Margin, and Lowest Round.');
   const places = [];
   for (let i=0; i<11; i++) {
-    const v = combos[`rplace${i}`].getValue();
-    if (!v) return alert(`Please enter ${PLACE_LABELS[i]} place result.`);
-    places.push(v);
+    const vals = getPlaceSlotValues(i).filter(v => v);
+    if (!vals.length) return alert(`Please enter ${PLACE_LABELS[i]} place result.`);
+    places.push(vals); // always store as array (supports ties)
   }
   results = { winner, score: parseInt(scoreVal), margin, lowRound, places };
   if (isConfigured()) {
@@ -891,12 +948,8 @@ async function saveResults() {
 async function clearResults() {
   if (!confirm('Clear all results? Leaderboard will go blank.')) return;
   results = null;
-  document.getElementById('result-score').value = '';
-  document.getElementById('result-margin').value = '';
-  document.getElementById('result-lowround').value = '';
-  combos['rwinner']?.reset();
-  PLACE_LABELS.forEach((_,i) => combos[`rplace${i}`]?.reset());
   if (isConfigured()) { try { await api('setResults', { results: null }); } catch(e){} }
+  buildResultForm(); // rebuilds clean since results is now null
 }
 
 function renderAdminEntries() {
@@ -956,16 +1009,25 @@ async function clearAllEntries() {
 }
 
 // ── SCORING & UTILS ──
+// Handles both legacy string format and new array format for tied positions
+function placeIncludes(slot, player) {
+  if (!slot || !player) return false;
+  return Array.isArray(slot) ? slot.includes(player) : slot === player;
+}
+function placesIncludesAny(places, player) {
+  return (places||[]).some(slot => placeIncludes(slot, player));
+}
+
 function calcScore(e) {
   if (!results) return 0;
   let pts = 0;
   if (e.winner === results.winner) pts += 5;
-  else if (results.places && results.places.includes(e.winner)) pts += 1;
+  else if (placesIncludesAny(results.places, e.winner)) pts += 1;
   if (e.score === results.score) pts += 3;
   if (e.lowRound === results.lowRound) pts += 2;
   (e.places||[]).forEach((pick, i) => {
-    if (results.places && results.places[i] && pick === results.places[i]) pts += 2;
-    else if (results.places && results.places.includes(pick)) pts += 1;
+    if (results.places && placeIncludes(results.places[i], pick)) pts += 2;
+    else if (placesIncludesAny(results.places, pick)) pts += 1;
   });
   return pts;
 }

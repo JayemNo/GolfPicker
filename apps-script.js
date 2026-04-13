@@ -166,7 +166,7 @@ function handleGet() {
   return {
     entries,
     results: resultsRaw ? JSON.parse(resultsRaw) : null,
-    locked:  lockedRaw === 'true',
+    locked:  lockedRaw === true || String(lockedRaw).toLowerCase() === 'true',
     players: playersRaw ? JSON.parse(playersRaw) : []
   };
 }
@@ -176,7 +176,7 @@ const NOTIFY_EMAIL = 'jayemn@gmail.com';
 function handleSaveEntry(entry) {
   if (!entry || !entry.name) return { ok: false, error: 'Missing entry name' };
   const lockedRaw = getConfig('locked');
-  if (lockedRaw === 'true') return { ok: false, error: 'Pool is locked — the Masters has started and picks are closed.' };
+  if (lockedRaw === true || String(lockedRaw).toLowerCase() === 'true') return { ok: false, error: 'Pool is locked — the Masters has started and picks are closed.' };
   const sheet = entriesSheet();
   const existingRow = rowForName(entry.name);
   const row = entryToRow(entry);
