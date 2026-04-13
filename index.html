@@ -756,7 +756,7 @@ function renderEntries() {
       let cls = '';
       if (scored && results.places) {
         if (placeIncludes(results.places[i], p)) cls = 'pick-correct';
-        else if (placesIncludesAny(results.places, p)) cls = 'pick-partial';
+        else if (p === results.winner || placesIncludesAny(results.places, p)) cls = 'pick-partial';
         else cls = 'pick-wrong';
       }
       cells += `<td class="${cls}">${esc(p)}</td>`;
@@ -819,7 +819,7 @@ function renderLeaderboard() {
     r: e.lowRound===results.lowRound ? 2 : 0,
     p: (e.places||[]).reduce((acc, pick, i) => {
       if (results.places && placeIncludes(results.places[i], pick)) return acc + 2;
-      if (placesIncludesAny(results.places, pick)) return acc + 1;
+      if (pick === results.winner || placesIncludesAny(results.places, pick)) return acc + 1;
       return acc;
     }, 0),
     marginDiff: results.margin != null && e.margin != null ? Math.abs(e.margin - results.margin) : 999
@@ -1027,7 +1027,7 @@ function calcScore(e) {
   if (e.lowRound === results.lowRound) pts += 2;
   (e.places||[]).forEach((pick, i) => {
     if (results.places && placeIncludes(results.places[i], pick)) pts += 2;
-    else if (placesIncludesAny(results.places, pick)) pts += 1;
+    else if (pick === results.winner || placesIncludesAny(results.places, pick)) pts += 1;
   });
   return pts;
 }
