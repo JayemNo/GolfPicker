@@ -139,7 +139,8 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
   .nav-tab{padding:10px 14px;font-size:0.85rem;}
 }
 
-.majors-nav { background:#0a0a0a; display:flex; justify-content:center; align-items:center; gap:4px; padding:8px 16px; flex-wrap:wrap; position:relative; }
+.majors-nav { background:#0a0a0a; display:flex; align-items:center; padding:6px 16px; }
+.majors-center { display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:center; flex:1; }
 .majors-nav-label { color:rgba(255,255,255,0.35); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:6px; font-family:'Source Sans 3',sans-serif; }
 .majors-link { color:rgba(255,255,255,0.5); font-size:0.82rem; font-weight:600; text-decoration:none; padding:4px 12px; border-radius:4px; letter-spacing:0.05em; font-family:'Source Sans 3',sans-serif; transition:color 0.15s, background 0.15s; }
 .majors-link:hover { color:white; background:rgba(255,255,255,0.08); }
@@ -150,15 +151,20 @@ input[type=number].num-input:focus { border-color:var(--green-light); background
 <body>
 
 <div class="majors-nav">
-  <span class="majors-nav-label">2026 Majors</span>
-  <a href="index.html" class="majors-link">The Masters</a>
-  <span class="majors-sep">·</span>
-  <a href="pga-championship.html" class="majors-link active">PGA Championship</a>
-  <span class="majors-sep">·</span>
-  <a href="us-open.html" class="majors-link">US Open</a>
-  <span class="majors-sep">·</span>
-  <a href="the-open.html" class="majors-link">The Open</a>
-  <a href="?admin" class="majors-link" id="majorsAdminLink" style="position:absolute;right:16px;opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
+  <div style="width:80px"></div>
+  <div class="majors-center">
+    <span class="majors-nav-label">2026 Majors</span>
+    <a href="index.html" class="majors-link">The Masters</a>
+    <span class="majors-sep">·</span>
+    <a href="pga-championship.html" class="majors-link active">PGA Championship</a>
+    <span class="majors-sep">·</span>
+    <a href="us-open.html" class="majors-link">US Open</a>
+    <span class="majors-sep">·</span>
+    <a href="the-open.html" class="majors-link">The Open</a>
+  </div>
+  <div style="width:80px;display:flex;justify-content:flex-end">
+    <a href="?admin" class="majors-link" id="majorsAdminLink" style="opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
+  </div>
 </div>
 
 <div class="site-header">

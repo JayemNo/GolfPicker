@@ -595,12 +595,16 @@
       .majors-nav {
         background: #0a0a0a;
         display: flex;
-        justify-content: center;
+        align-items: center;
+        padding: 6px 16px;
+      }
+      .majors-center {
+        display: flex;
         align-items: center;
         gap: 4px;
-        padding: 8px 16px;
         flex-wrap: wrap;
-        position: relative;
+        justify-content: center;
+        flex: 1;
       }
       .majors-nav-label {
         color: rgba(255, 255, 255, 0.35);
@@ -642,26 +646,20 @@
   </head>
   <body>
     <div class="majors-nav">
-      <span class="majors-nav-label">2026 Majors</span>
-      <a href="index.html" class="majors-link">The Masters</a>
-      <span class="majors-sep">·</span>
-      <a href="pga-championship.html" class="majors-link">PGA Championship</a>
-      <span class="majors-sep">·</span>
-      <a href="us-open.html" class="majors-link active">US Open</a>
-      <span class="majors-sep">·</span>
-      <a href="the-open.html" class="majors-link">The Open</a>
-      <a
-        href="?admin"
-        class="majors-link"
-        id="majorsAdminLink"
-        style="
-          position: absolute;
-          right: 16px;
-          opacity: 0.4;
-          font-size: 0.78rem;
-        "
-        >⚙ Admin</a
-      >
+      <div style="width:80px"></div>
+      <div class="majors-center">
+        <span class="majors-nav-label">2026 Majors</span>
+        <a href="index.html" class="majors-link">The Masters</a>
+        <span class="majors-sep">·</span>
+        <a href="pga-championship.html" class="majors-link">PGA Championship</a>
+        <span class="majors-sep">·</span>
+        <a href="us-open.html" class="majors-link active">US Open</a>
+        <span class="majors-sep">·</span>
+        <a href="the-open.html" class="majors-link">The Open</a>
+      </div>
+      <div style="width:80px;display:flex;justify-content:flex-end">
+        <a href="?admin" class="majors-link" id="majorsAdminLink" style="opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
+      </div>
     </div>
 
     <div class="site-header">
