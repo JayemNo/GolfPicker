@@ -663,7 +663,7 @@
     </div>
 
     <div class="site-header">
-      <div class="header-badge">Oakmont · June 11–14, 2026</div>
+      <div class="header-badge">Shinnecock Hills · June 18–21, 2026</div>
       <h1>US Open <span>Pick'em</span></h1>
       <p>$10 entry · 1st 70% · 2nd 20% · 3rd 10%</p>
       <div
@@ -2526,8 +2526,8 @@
         const el = document.getElementById("tournamentCountdown");
         if (!el) return;
         const now = new Date();
-        const start = new Date("2026-06-11T00:00:00");
-        const end = new Date("2026-06-14T23:59:59");
+        const start = new Date("2026-06-18T00:00:00");
+        const end = new Date("2026-06-21T23:59:59");
         if (now < start) {
           const days = Math.ceil((start - now) / (1000 * 60 * 60 * 24));
           el.innerHTML =
@@ -2543,7 +2543,7 @@
       }
       updateCountdown();
 
-      const tournamentOver = new Date() > new Date("2026-06-14T23:59:59");
+      const tournamentOver = new Date() > new Date("2026-06-21T23:59:59");
       if (tournamentOver) {
         document.getElementById("tab-picks").style.display = "none";
         document.getElementById("panel-picks").classList.remove("active");
