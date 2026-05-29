@@ -357,6 +357,17 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
   </div>
 </div>
 
+<!-- Picks detail modal -->
+<div id="picksModal" class="picks-modal-backdrop hidden">
+  <div class="picks-modal">
+    <div class="picks-modal-header">
+      <h3 id="picksModalTitle"></h3>
+      <button class="picks-modal-close" id="picksModalClose">&times;</button>
+    </div>
+    <div class="picks-modal-body" id="picksModalBody"></div>
+  </div>
+</div>
+
 <script>
 const SCRIPT_URL     = 'https://script.google.com/macros/s/AKfycbzoSUbLS9rIZ0Mk55lGDdBf8V6evwmpXvtcsJYAt779-GGQT6ENu-FvFzfGtYmeNP2QUQ/exec';
 const ADMIN_PASSWORD = 'worldcup2026';
@@ -1032,14 +1043,5 @@ loadAll().then(() => {
   renderLockStatus();
 });
 </script>
-<div id="picksModal" class="picks-modal-backdrop hidden">
-  <div class="picks-modal">
-    <div class="picks-modal-header">
-      <h3 id="picksModalTitle"></h3>
-      <button class="picks-modal-close" id="picksModalClose">&times;</button>
-    </div>
-    <div class="picks-modal-body" id="picksModalBody"></div>
-  </div>
-</div>
 </body>
 </html>
