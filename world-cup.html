@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 Pick'em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #001f5b;
+  --primary-light: #1a3d8a;
+  --gold: #c8a830;
+  --gold-light: #e0c050;
+  --gold-pale: #fdf5e0;
+  --green: #1a7a3d;
+  --green-light: #27ae60;
+  --red: #c0392b;
+  --text: #1a1a2e;
+  --text-muted: #666;
+  --bg: #f0f4f8;
+  --border: #d0dae8;
+  --shadow: rgba(0,31,91,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 16px; }
+
+/* NAV */
+.majors-nav { background: #0a0a0a; display: flex; align-items: center; padding: 6px 16px; }
+.majors-center { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; flex: 1; }
+.majors-nav-label { color: rgba(255,255,255,0.35); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; margin-right: 6px; font-family: 'Source Sans 3', sans-serif; }
+.majors-link { color: rgba(255,255,255,0.5); font-size: 0.82rem; font-weight: 600; text-decoration: none; padding: 4px 12px; border-radius: 4px; letter-spacing: 0.05em; font-family: 'Source Sans 3', sans-serif; transition: color 0.15s, background 0.15s; }
+.majors-link:hover { color: white; background: rgba(255,255,255,0.08); }
+.majors-link.active { color: var(--gold-light); background: rgba(200,168,48,0.18); pointer-events: none; }
+.majors-sep { color: rgba(255,255,255,0.18); font-size: 0.8rem; user-select: none; }
+
+/* HEADER */
+.site-header { background: linear-gradient(135deg, #001f5b 0%, #1a3d8a 60%, #0d2e7a 100%); color: white; text-align: center; padding: 32px 20px 28px; }
+.header-badge { display: inline-block; background: rgba(200,168,48,0.2); color: var(--gold-light); border: 1px solid rgba(200,168,48,0.3); padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.site-header h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; }
+.site-header h1 span { color: var(--gold-light); }
+.site-header p { margin-top: 8px; color: rgba(255,255,255,0.65); font-size: 0.95rem; }
+.header-countdown { margin-top: 8px; font-size: 0.9rem; color: rgba(255,255,255,0.55); }
+
+/* TABS */
+.tab-bar { background: white; display: flex; border-bottom: 2px solid var(--border); overflow-x: auto; position: sticky; top: 0; z-index: 100; }
+.tab-btn { flex: none; padding: 14px 22px; font-size: 0.9rem; font-weight: 700; color: var(--text-muted); cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -2px; letter-spacing: 0.03em; font-family: 'Source Sans 3', sans-serif; white-space: nowrap; }
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--gold); }
+
+/* PANELS */
+.panel { display: none; max-width: 1300px; margin: 0 auto; padding: 24px 16px; }
+.panel.active { display: block; }
+
+/* CARDS */
+.card { background: white; border-radius: 12px; box-shadow: 0 2px 12px var(--shadow); margin-bottom: 20px; overflow: hidden; }
+.card-header { background: var(--primary); color: white; padding: 16px 20px; }
+.card-header h2 { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.card-header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-top: 2px; }
+.card-body { padding: 20px; }
+
+/* BRACKET */
+.bracket-container { overflow-x: auto; padding: 8px 0; }
+.bracket { display: flex; gap: 0; }
+.bk-round { display: flex; flex-direction: column; flex-shrink: 0; width: 168px; }
+.bk-round-hdr { text-align: center; font-size: 0.67rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--primary); padding: 4px 0 10px; height: 30px; white-space: nowrap; }
+.bk-match-wrap { display: flex; align-items: center; padding: 3px 5px; }
+.bk-match { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.bk-team { display: flex; align-items: center; padding: 8px 10px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text); transition: background 0.1s, color 0.1s; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Source Sans 3', sans-serif; line-height: 1.2; min-height: 36px; }
+.bk-team:first-child { border-bottom: 1px solid var(--border); }
+.bk-team:hover:not(:disabled) { background: rgba(0,31,91,0.07); }
+.bk-team.selected { background: var(--primary); color: white; }
+.bk-team.correct { background: #d4edda; color: #155724; }
+.bk-team.wrong { background: #f8d7da; color: #721c24; text-decoration: line-through; opacity: 0.7; }
+.bk-team.tbd { color: var(--text-muted); font-style: italic; font-size: 0.72rem; cursor: default; }
+.bk-team:disabled { cursor: default; }
+
+/* Bracket connectors */
+.bk-conn { flex-shrink: 0; width: 18px; display: flex; flex-direction: column; }
+.bk-conn-pair { display: flex; flex-direction: column; }
+.bk-conn-top { flex: 1; border-right: 2px solid #ccd0db; border-bottom: 2px solid #ccd0db; border-bottom-right-radius: 3px; }
+.bk-conn-bot { flex: 1; border-right: 2px solid #ccd0db; }
+
+/* FORM */
+.form-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+.form-group label { font-weight: 700; font-size: 0.85rem; }
+.form-group input { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: 'Source Sans 3', sans-serif; outline: none; transition: border-color 0.15s; }
+.form-group input:focus { border-color: var(--primary); }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 24px; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border: none; font-family: 'Source Sans 3', sans-serif; transition: opacity 0.15s; }
+.btn:hover:not(:disabled) { opacity: 0.85; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-gold { background: var(--gold); color: #1a1a2e; }
+.btn-danger { background: var(--red); color: white; }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+
+/* BANNERS */
+.locked-banner { background: #fee2e2; border: 2px solid #ef4444; border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 16px; }
+.locked-banner strong { color: #dc2626; }
+.setup-banner { background: #fff3cd; border: 2px solid #f59e0b; border-radius: 10px; padding: 16px 20px; text-align: center; margin-bottom: 16px; }
+.setup-banner strong { color: #b45309; }
+
+/* ENTRIES TABLE */
+.entries-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.entries-table th { background: var(--primary); color: white; padding: 10px 14px; text-align: left; font-weight: 700; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.entries-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.entries-table tr:last-child td { border-bottom: none; }
+.entries-table tr:hover td { background: rgba(0,31,91,0.03); }
+
+/* LEADERBOARD */
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.lb-row:last-child { border-bottom: none; }
+.lb-rank { font-size: 1.1rem; font-weight: 900; color: var(--text-muted); min-width: 30px; }
+.lb-rank.gold { color: #b8860b; }
+.lb-rank.silver { color: #888; }
+.lb-name { flex: 1; font-weight: 700; font-size: 1rem; min-width: 120px; }
+.lb-prize { font-size: 0.85rem; color: var(--green-light); font-weight: 700; }
+.lb-score { font-size: 1.2rem; font-weight: 900; color: var(--primary); }
+.lb-paid { font-size: 0.72rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-left: 6px; }
+.lb-paid.yes { background: #d4edda; color: #155724; }
+.lb-paid.no { background: #f8d7da; color: #721c24; }
+.lb-detail { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ADMIN */
+.admin-section { margin-bottom: 28px; }
+.admin-section-title { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.bk-admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.bk-admin-match { background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.bk-admin-match label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.bk-admin-match input { width: 100%; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: 'Source Sans 3', sans-serif; outline: none; margin-bottom: 4px; }
+.bk-admin-match input:focus { border-color: var(--primary); }
+.result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.result-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.result-item label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.result-item select { width: 100%; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: 'Source Sans 3', sans-serif; outline: none; }
+.paid-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.paid-row:last-child { border-bottom: none; }
+
+/* MODAL */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: white; border-radius: 16px; padding: 32px; max-width: 360px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+.modal h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; }
+.modal input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: 'Source Sans 3', sans-serif; margin-bottom: 12px; outline: none; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.modal-err { color: var(--red); font-size: 0.85rem; margin-bottom: 8px; display: none; }
+
+.hidden { display: none !important; }
+
+@media (max-width: 600px) {
+  .bk-round { width: 132px; }
+  .bk-team { font-size: 0.72rem; padding: 6px 7px; min-height: 30px; }
+  .panel { padding: 14px 10px; }
+  .bk-conn { width: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="majors-nav">
+  <div style="width:80px"></div>
+  <div class="majors-center">
+    <span class="majors-nav-label">2026</span>
+    <a href="index.html" class="majors-link">The Masters</a>
+    <span class="majors-sep">·</span>
+    <a href="pga-championship.html" class="majors-link">PGA Championship</a>
+    <span class="majors-sep">·</span>
+    <a href="us-open.html" class="majors-link">US Open</a>
+    <span class="majors-sep">·</span>
+    <a href="the-open.html" class="majors-link">The Open</a>
+    <span class="majors-sep">·</span>
+    <a href="world-cup.html" class="majors-link active">World Cup</a>
+  </div>
+  <div style="width:80px;display:flex;justify-content:flex-end">
+    <a href="?admin" class="majors-link" id="majorsAdminLink" style="opacity:0.4;font-size:0.78rem;">⚙ Admin</a>
+  </div>
+</div>
+
+<div class="site-header">
+  <div class="header-badge">⚽ USA · Canada · Mexico · June–July 2026</div>
+  <h1>FIFA World Cup <span>2026 Pick'em</span></h1>
+  <p>$10 entry · 1st 80% · 2nd 20%</p>
+  <div class="header-countdown" id="tournamentCountdown"></div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-picks">Submit Picks</button>
+  <button class="tab-btn" id="tab-entries">All Entries</button>
+  <button class="tab-btn" id="tab-leaderboard">Leaderboard</button>
+  <button class="tab-btn" id="tab-admin" style="display:none">Admin</button>
+</div>
+
+<!-- PICKS PANEL -->
+<div class="panel active" id="panel-picks">
+  <div id="lockedBanner" class="locked-banner hidden">
+    <strong>🔒 Picks are locked</strong> — the knockout bracket has started and brackets are closed.
+  </div>
+  <div id="setupBanner" class="setup-banner hidden">
+    <strong>⏳ Bracket not set yet</strong> — the 32-team knockout bracket will be available once the group stage concludes (~July 2). Check back then!
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Your Info</h2></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="inputName">Your Name</label>
+          <input type="text" id="inputName" placeholder="First Last">
+        </div>
+        <div class="form-group">
+          <label for="inputEmail">Email (optional)</label>
+          <input type="email" id="inputEmail" placeholder="you@example.com">
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btnLoad">Load my existing bracket</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Your Bracket</h2>
+      <p>Click a team name to advance them. Fill out all 31 matches to submit.</p>
+    </div>
+    <div class="card-body" style="padding:12px 8px">
+      <div class="bracket-container">
+        <div class="bracket" id="bracketPick"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding-bottom:24px">
+    <button class="btn btn-primary" id="btnSubmit" style="font-size:1.05rem;padding:14px 40px">Submit My Bracket</button>
+    <p id="submitMsg" style="margin-top:12px;font-weight:700;color:var(--green)"></p>
+  </div>
+</div>
+
+<!-- ENTRIES PANEL -->
+<div class="panel" id="panel-entries">
+  <div class="card">
+    <div class="card-header">
+      <h2>All Entries</h2>
+      <p id="entriesCount">Loading…</p>
+    </div>
+    <div class="card-body" style="overflow-x:auto">
+      <table class="entries-table" id="entriesTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Champion Pick</th>
+            <th>Finalist Pick</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="entriesBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD PANEL -->
+<div class="panel" id="panel-leaderboard">
+  <div class="card">
+    <div class="card-header">
+      <h2>Leaderboard</h2>
+      <p>R32=1pt · R16=2pt · QF=4pt · SF=8pt · Final=16pt · Max 80 pts</p>
+    </div>
+    <div id="lbBody" class="card-body">
+      <p style="color:var(--text-muted)">Scores update as results are entered by the admin.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="panel" id="panel-admin">
+  <div class="card">
+    <div class="card-header"><h2>Admin Panel</h2></div>
+    <div class="card-body">
+
+      <div class="admin-section">
+        <div class="admin-section-title">Pool Status</div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <span id="lockStatusText" style="font-weight:700"></span>
+          <button class="btn btn-sm" id="btnToggleLock"></button>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Set Knockout Bracket (32 Teams)</div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
+          Enter the two teams for each Round of 32 match after the group stage concludes. Match order should follow the official bracket draw.
+        </p>
+        <div class="bk-admin-grid" id="bracketAdminGrid"></div>
+        <button class="btn btn-primary btn-sm" id="btnSaveBracket" style="margin-top:14px">Save Bracket</button>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Enter Match Results</div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">Select the winner of each completed match. Leaderboard updates immediately.</p>
+        <div class="result-grid" id="resultGrid"></div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btnSaveResults">Save Results</button>
+          <button class="btn btn-danger btn-sm" id="btnClearResults">Clear Results</button>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <div class="admin-section-title">Manage Entries</div>
+        <div id="adminEntriesList"></div>
+        <button class="btn btn-danger btn-sm" id="btnClearAll" style="margin-top:14px">Clear All Entries</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Admin modal -->
+<div id="adminModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h2>🔒 Admin Access</h2>
+    <input type="password" id="adminPwInput" placeholder="Password" autocomplete="current-password">
+    <div class="modal-err" id="adminPwError">Incorrect password.</div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost btn-sm" id="btnAdminCancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="btnAdminSubmit">Enter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL     = 'YOUR_WORLDCUP_APPS_SCRIPT_URL_HERE';
+const ADMIN_PASSWORD = 'worldcup2026';
+
+// ── Bracket structure ──────────────────────────────────────────
+// Matches 1-16:  Round of 32   (teams from group stage, set by admin)
+// Matches 17-24: Round of 16
+// Matches 25-28: Quarter-finals
+// Matches 29-30: Semi-finals
+// Match 31:      Final
+
+const ROUNDS = [
+  { id:'r32', label:'Round of 32',   matches:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], points:1  },
+  { id:'r16', label:'Round of 16',   matches:[17,18,19,20,21,22,23,24],                  points:2  },
+  { id:'qf',  label:'Quarterfinals', matches:[25,26,27,28],                               points:4  },
+  { id:'sf',  label:'Semifinals',    matches:[29,30],                                     points:8  },
+  { id:'f',   label:'Final',         matches:[31],                                        points:16 }
+];
+
+// Which two matches feed into each later-round match
+const PARENTS = {
+  17:[1,2],  18:[3,4],  19:[5,6],  20:[7,8],
+  21:[9,10], 22:[11,12],23:[13,14],24:[15,16],
+  25:[17,18],26:[19,20],27:[21,22],28:[23,24],
+  29:[25,26],30:[27,28],
+  31:[29,30]
+};
+
+const MATCH_LABELS = {
+  29:'Semifinal 1', 30:'Semifinal 2', 31:'Final'
+};
+function matchLabel(id) {
+  if (MATCH_LABELS[id]) return MATCH_LABELS[id];
+  if (id <= 16) return `R32 Match ${id}`;
+  if (id <= 24) return `R16 Match ${id-16}`;
+  return `QF Match ${id-24}`;
+}
+
+// ── State ──────────────────────────────────────────────────────
+let bracket  = {};  // { "1a":"France", "1b":"Senegal", ... }
+let myPicks  = {};  // { 1:"France", 2:"Spain", ... }  numeric keys
+let entries  = [];
+let results  = {};  // { 1:"France", 17:"France", ... }
+let locked   = false;
+let adminUnlocked  = false;
+let pendingAdminTab = null;
+
+const isAdminMode = new URLSearchParams(window.location.search).has('admin');
+
+// ── API ────────────────────────────────────────────────────────
+function api(body) {
+  return fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify(body) }).then(r => r.json());
+}
+function loadAll() {
+  return fetch(SCRIPT_URL + '?action=get').then(r => r.json()).then(d => {
+    entries = d.entries || [];
+    results = d.results || {};
+    locked  = d.locked  || false;
+    bracket = d.bracket || {};
+  });
+}
+
+// ── Bracket helpers ────────────────────────────────────────────
+function teamA(matchId, picks) {
+  picks = picks || myPicks;
+  if (matchId <= 16) return bracket[matchId+'a'] || '';
+  return picks[PARENTS[matchId][0]] || '';
+}
+function teamB(matchId, picks) {
+  picks = picks || myPicks;
+  if (matchId <= 16) return bracket[matchId+'b'] || '';
+  return picks[PARENTS[matchId][1]] || '';
+}
+
+// When user changes pick in matchId, invalidate downstream picks that
+// depended on the OLD value
+function invalidateDownstream(matchId, oldTeam) {
+  for (const [m, pars] of Object.entries(PARENTS)) {
+    const mid = Number(m);
+    if (pars.includes(matchId)) {
+      if (myPicks[mid] && myPicks[mid] === oldTeam) {
+        const was = myPicks[mid];
+        delete myPicks[mid];
+        invalidateDownstream(mid, was);
+      }
+      break;
+    }
+  }
+}
+
+function pickTeam(matchId, team) {
+  const old = myPicks[matchId];
+  myPicks[matchId] = team;
+  if (old && old !== team) invalidateDownstream(matchId, old);
+  renderPickBracket();
+}
+
+// ── Render pick bracket ────────────────────────────────────────
+function renderPickBracket() {
+  const container = document.getElementById('bracketPick');
+  container.innerHTML = '';
+
+  const noBracket = Object.keys(bracket).length === 0;
+  document.getElementById('setupBanner').classList.toggle('hidden', !noBracket || locked);
+  document.getElementById('lockedBanner').classList.toggle('hidden', !locked);
+
+  if (noBracket) {
+    container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Bracket not configured yet.</p>';
+    return;
+  }
+
+  // Fixed total height: 16 units. Each unit = 56px.
+  const UNIT = 56;
+  const H    = 16 * UNIT; // 896px
+
+  ROUNDS.forEach((round, ri) => {
+    const n      = round.matches.length;
+    const matchH = H / n;
+
+    // Round column
+    const col = document.createElement('div');
+    col.className = 'bk-round';
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'bk-round-hdr';
+    hdr.textContent = round.label;
+    col.appendChild(hdr);
+
+    // Matches
+    round.matches.forEach(mid => {
+      const wrap = document.createElement('div');
+      wrap.className = 'bk-match-wrap';
+      wrap.style.height = matchH + 'px';
+
+      const tA = teamA(mid);
+      const tB = teamB(mid);
+      const picked = myPicks[mid] || null;
+      const resWinner = results[mid] || null;
+
+      const card = document.createElement('div');
+      card.className = 'bk-match';
+      card.appendChild(makeTeamBtn(mid, tA, picked, resWinner));
+      card.appendChild(makeTeamBtn(mid, tB, picked, resWinner));
+
+      wrap.appendChild(card);
+      col.appendChild(wrap);
+    });
+
+    container.appendChild(col);
+
+    // Connector column (between rounds)
+    if (ri < ROUNDS.length - 1) {
+      const connCol = document.createElement('div');
+      connCol.className = 'bk-conn';
+
+      const nextN = ROUNDS[ri+1].matches.length;
+      const groupH = H / nextN; // height per connector group = 2 source matches
+
+      for (let g = 0; g < nextN; g++) {
+        const pair = document.createElement('div');
+        pair.className = 'bk-conn-pair';
+        pair.style.height = groupH + 'px';
+        const top = document.createElement('div');
+        top.className = 'bk-conn-top';
+        const bot = document.createElement('div');
+        bot.className = 'bk-conn-bot';
+        pair.appendChild(top);
+        pair.appendChild(bot);
+        connCol.appendChild(pair);
+      }
+      // Account for header offset
+      connCol.style.paddingTop = '30px';
+      container.appendChild(connCol);
+    }
+  });
+}
+
+function makeTeamBtn(matchId, team, picked, resWinner) {
+  const btn = document.createElement('button');
+  btn.className = 'bk-team';
+  if (!team) {
+    btn.textContent = 'TBD';
+    btn.classList.add('tbd');
+    btn.disabled = true;
+  } else {
+    btn.textContent = team;
+    if (resWinner) {
+      // Show result colouring
+      if (picked === team) {
+        btn.classList.add(resWinner === team ? 'correct' : 'wrong');
+      }
+      btn.disabled = true;
+    } else if (locked) {
+      if (picked === team) btn.classList.add('selected');
+      btn.disabled = true;
+    } else {
+      if (picked === team) btn.classList.add('selected');
+      btn.addEventListener('click', () => pickTeam(matchId, team));
+    }
+  }
+  return btn;
+}
+
+// ── Render entries ─────────────────────────────────────────────
+function renderEntries() {
+  const tbody = document.getElementById('entriesBody');
+  const count = document.getElementById('entriesCount');
+  count.textContent = entries.length
+    ? `${entries.length} entr${entries.length===1?'y':'ies'}`
+    : 'No entries yet';
+
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px">No entries yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = entries.map(e => {
+    const picks = e.picks || {};
+    const champion = picks[31] || '—';
+    const sf1 = picks[29] || '';
+    const sf2 = picks[30] || '';
+    const finalist = champion === sf1 ? sf2 : sf1;
+    return `<tr>
+      <td><strong>${e.name}</strong></td>
+      <td>${champion}</td>
+      <td>${finalist || '—'}</td>
+      <td style="color:var(--text-muted);font-size:0.82rem">${fmtTs(e.ts)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Scoring ────────────────────────────────────────────────────
+function calcScore(entry) {
+  const picks = entry.picks || {};
+  let score = 0;
+  const bd = {};
+  ROUNDS.forEach(r => {
+    let rs = 0;
+    r.matches.forEach(mid => {
+      if (results[mid] && picks[mid] === results[mid]) { score += r.points; rs += r.points; }
+    });
+    bd[r.id] = rs;
+  });
+  return { score, bd };
+}
+
+// ── Render leaderboard ─────────────────────────────────────────
+function renderLeaderboard() {
+  const body = document.getElementById('lbBody');
+  if (!entries.length) {
+    body.innerHTML = '<p style="color:var(--text-muted)">No entries yet.</p>';
+    return;
+  }
+
+  const scored = entries.map(e => {
+    const { score, bd } = calcScore(e);
+    return { ...e, score, bd, champion:(e.picks||{})[31]||'—' };
+  }).sort((a,b) => b.score - a.score);
+
+  const paidCount = entries.filter(e => e.paid).length;
+  const pot = paidCount * 10;
+  const prizes = [Math.round(pot * 0.8), Math.round(pot * 0.2)];
+
+  body.innerHTML = '';
+  scored.forEach((e, i) => {
+    const rankSym = i === 0 ? '🥇' : i === 1 ? '🥈' : `${i+1}.`;
+    const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : '';
+    const prize   = prizes[i] ? `$${prizes[i]}` : '';
+    const bdStr   = fmtBreakdown(e.bd);
+
+    const row = document.createElement('div');
+    row.className = 'lb-row';
+    row.innerHTML = `
+      <div class="lb-rank ${rankCls}">${rankSym}</div>
+      <div class="lb-name">
+        ${e.name}
+        <span class="lb-paid ${e.paid?'yes':'no'}">${e.paid?'✓ PAID':'UNPAID'}</span>
+        <div class="lb-detail">${bdStr} · Champion: ${e.champion}</div>
+      </div>
+      ${prize ? `<div class="lb-prize">${prize}</div>` : ''}
+      <div class="lb-score">${e.score} <span style="font-size:0.72rem;color:var(--text-muted)">pts</span></div>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function fmtBreakdown(bd) {
+  if (!bd) return '';
+  return ROUNDS
+    .filter(r => bd[r.id])
+    .map(r => `${r.label.split(' ')[0]}: ${bd[r.id]}`)
+    .join(' · ') || '0 pts';
+}
+
+// ── Admin: bracket input grid ──────────────────────────────────
+function renderAdminBracketGrid() {
+  const grid = document.getElementById('bracketAdminGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 16; i++) {
+    const div = document.createElement('div');
+    div.className = 'bk-admin-match';
+    div.innerHTML = `<label>Match ${i}</label>
+      <input type="text" id="bm${i}a" placeholder="Team A" value="${bracket[i+'a']||''}">
+      <input type="text" id="bm${i}b" placeholder="Team B" value="${bracket[i+'b']||''}">`;
+    grid.appendChild(div);
+  }
+}
+
+// ── Admin: results grid ────────────────────────────────────────
+function renderAdminResultGrid() {
+  const grid = document.getElementById('resultGrid');
+  grid.innerHTML = '';
+  const noBracket = Object.keys(bracket).length === 0;
+  if (noBracket) {
+    grid.innerHTML = '<p style="color:var(--text-muted)">Set the bracket first.</p>';
+    return;
+  }
+
+  ROUNDS.forEach(round => {
+    round.matches.forEach(mid => {
+      const tA = mid <= 16 ? bracket[mid+'a'] : results[PARENTS[mid][0]] || '';
+      const tB = mid <= 16 ? bracket[mid+'b'] : results[PARENTS[mid][1]] || '';
+      if (!tA && !tB) return;
+      const cur = results[mid] || '';
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = `<label>${matchLabel(mid)}</label>
+        <select id="res${mid}">
+          <option value="">— no result —</option>
+          ${tA ? `<option value="${tA}" ${cur===tA?'selected':''}>${tA}</option>` : ''}
+          ${tB ? `<option value="${tB}" ${cur===tB?'selected':''}>${tB}</option>` : ''}
+        </select>`;
+      grid.appendChild(div);
+    });
+  });
+}
+
+// ── Admin: entries list ────────────────────────────────────────
+function renderAdminEntries() {
+  const el = document.getElementById('adminEntriesList');
+  if (!entries.length) { el.innerHTML = '<p style="color:var(--text-muted)">No entries.</p>'; return; }
+  el.innerHTML = entries.map(e => {
+    const safeName = e.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const cbId = 'pd_' + e.name.replace(/\W/g,'_');
+    return `<div class="paid-row">
+      <strong style="flex:1;min-width:130px">${e.name}</strong>
+      <span style="color:var(--text-muted);font-size:0.82rem;flex:1">${e.email||'—'}</span>
+      <label style="display:flex;align-items:center;gap:5px;font-size:0.82rem">
+        <input type="checkbox" id="${cbId}" ${e.paid?'checked':''} onchange="togglePaid('${safeName}',this.checked)">
+        Paid
+      </label>
+      <button class="btn btn-danger btn-sm" onclick="removeEntry('${safeName}')">Delete</button>
+    </div>`;
+  }).join('');
+}
+
+// ── Admin: lock status ─────────────────────────────────────────
+function renderLockStatus() {
+  const txt = document.getElementById('lockStatusText');
+  const btn = document.getElementById('btnToggleLock');
+  txt.innerHTML = locked
+    ? '<span style="color:var(--red)">🔒 Pool is LOCKED</span>'
+    : '<span style="color:var(--green)">🔓 Pool is OPEN</span>';
+  btn.textContent = locked ? 'Unlock Pool' : 'Lock Pool';
+  btn.className   = locked ? 'btn btn-sm btn-ghost' : 'btn btn-sm btn-danger';
+  document.getElementById('lockedBanner').classList.toggle('hidden', !locked);
+}
+
+// ── Submit picks ───────────────────────────────────────────────
+function submitPicks() {
+  const name  = document.getElementById('inputName').value.trim();
+  const email = document.getElementById('inputEmail').value.trim();
+  if (!name) { alert('Please enter your name.'); return; }
+  if (locked) { alert('The pool is locked — picks are closed.'); return; }
+  const n = Object.keys(myPicks).length;
+  if (n < 31 && !confirm(`You've filled in ${n}/31 matches. Submit an incomplete bracket?`)) return;
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  api({ action:'saveEntry', entry:{ name, email, picks:myPicks, ts:new Date().toISOString(), paid:false }})
+    .then(res => {
+      if (res.ok) {
+        document.getElementById('submitMsg').textContent = res.updated
+          ? '✓ Your bracket has been updated!' : '✓ Bracket submitted!';
+        loadAll().then(() => { renderEntries(); renderLeaderboard(); });
+      } else alert('Error: ' + (res.error || 'Unknown'));
+    })
+    .catch(() => alert('Network error — please try again.'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Submit My Bracket'; });
+}
+
+function loadEntry() {
+  const name = document.getElementById('inputName').value.trim();
+  if (!name) { alert('Enter your name first.'); return; }
+  const e = entries.find(e => e.name.toLowerCase() === name.toLowerCase());
+  if (!e) { alert('No entry found for that name.'); return; }
+  document.getElementById('inputEmail').value = e.email || '';
+  // Keys come back as strings from JSON — convert to numbers
+  myPicks = {};
+  for (const [k,v] of Object.entries(e.picks || {})) myPicks[Number(k)] = v;
+  renderPickBracket();
+  document.getElementById('submitMsg').textContent = '✓ Bracket loaded — edit and resubmit to update.';
+}
+
+// ── Admin actions ──────────────────────────────────────────────
+function saveBracket() {
+  const b = {};
+  for (let i = 1; i <= 16; i++) {
+    b[i+'a'] = document.getElementById('bm'+i+'a').value.trim();
+    b[i+'b'] = document.getElementById('bm'+i+'b').value.trim();
+  }
+  api({ action:'setBracket', bracket:b }).then(res => {
+    if (res.ok) { bracket = b; renderPickBracket(); renderAdminResultGrid(); alert('Bracket saved!'); }
+    else alert('Error: ' + res.error);
+  });
+}
+
+function saveResults() {
+  const r = {};
+  document.querySelectorAll('#resultGrid select').forEach(sel => {
+    const mid = Number(sel.id.replace('res',''));
+    if (sel.value) r[mid] = sel.value;
+  });
+  api({ action:'setResults', results:r }).then(res => {
+    if (res.ok) { results = r; renderLeaderboard(); renderAdminResultGrid(); alert('Results saved!'); }
+    else alert('Error: ' + res.error);
+  });
+}
+
+function clearResults() {
+  if (!confirm('Clear all match results?')) return;
+  api({ action:'setResults', results:{} }).then(res => {
+    if (res.ok) { results = {}; renderLeaderboard(); renderAdminResultGrid(); }
+  });
+}
+
+function toggleLock() {
+  api({ action:'setLocked', locked:!locked }).then(res => {
+    if (res.ok) { locked = !locked; renderLockStatus(); renderPickBracket(); }
+  });
+}
+
+function removeEntry(name) {
+  if (!confirm(`Delete ${name}'s bracket?`)) return;
+  api({ action:'deleteEntry', name }).then(res => {
+    if (res.ok) loadAll().then(() => { renderEntries(); renderLeaderboard(); renderAdminEntries(); });
+  });
+}
+
+function clearAll() {
+  if (!confirm('Delete ALL entries? This cannot be undone.')) return;
+  api({ action:'clearEntries' }).then(res => {
+    if (res.ok) loadAll().then(() => { renderEntries(); renderLeaderboard(); renderAdminEntries(); });
+  });
+}
+
+function togglePaid(name, paid) {
+  api({ action:'setPaid', name, paid }).then(res => {
+    if (res.ok) { const e = entries.find(e => e.name===name); if (e) e.paid = paid; renderLeaderboard(); }
+  });
+}
+
+// ── Admin modal ────────────────────────────────────────────────
+function requestAdmin(tab) {
+  if (adminUnlocked) { showPanel('panel-admin'); setActiveTab(tab); return; }
+  pendingAdminTab = tab;
+  document.getElementById('adminModal').classList.remove('hidden');
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminPwError').style.display = 'none';
+  setTimeout(() => document.getElementById('adminPwInput').focus(), 50);
+}
+function submitAdminPw() {
+  if (document.getElementById('adminPwInput').value === ADMIN_PASSWORD) {
+    adminUnlocked = true;
+    document.getElementById('adminModal').classList.add('hidden');
+    showPanel('panel-admin');
+    setActiveTab(pendingAdminTab || document.getElementById('tab-admin'));
+    pendingAdminTab = null;
+    renderAdminBracketGrid(); renderAdminResultGrid(); renderAdminEntries(); renderLockStatus();
+  } else {
+    document.getElementById('adminPwError').style.display = 'block';
+  }
+}
+
+// ── Nav helpers ────────────────────────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setActiveTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tab.classList.add('active');
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function fmtTs(ts) {
+  if (!ts) return '—';
+  try { return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+  catch { return ts; }
+}
+
+// ── Countdown ──────────────────────────────────────────────────
+function updateCountdown() {
+  const el = document.getElementById('tournamentCountdown');
+  if (!el) return;
+  const now      = new Date();
+  const start    = new Date('2026-06-11T00:00:00');
+  const lockDate = new Date('2026-07-04T00:00:00');
+  const end      = new Date('2026-07-19T23:59:59');
+  if (now < start) {
+    const days = Math.ceil((start - now) / 86400000);
+    el.innerHTML = `Group stage starts in <span style="color:#ffd700">${days}</span> day${days===1?'':'s'}`;
+  } else if (now < lockDate) {
+    el.innerHTML = 'Group stage underway · <span style="color:#ffd700">Submit your bracket before July 4</span>';
+  } else if (now <= end) {
+    el.innerHTML = 'Knockout rounds underway · Bracket locked';
+  } else {
+    el.textContent = 'Tournament complete';
+  }
+}
+updateCountdown();
+
+// ── Init ───────────────────────────────────────────────────────
+document.getElementById('btnSubmit').addEventListener('click', submitPicks);
+document.getElementById('btnLoad').addEventListener('click', loadEntry);
+document.getElementById('btnSaveBracket').addEventListener('click', saveBracket);
+document.getElementById('btnSaveResults').addEventListener('click', saveResults);
+document.getElementById('btnClearResults').addEventListener('click', clearResults);
+document.getElementById('btnClearAll').addEventListener('click', clearAll);
+document.getElementById('btnToggleLock').addEventListener('click', toggleLock);
+document.getElementById('btnAdminSubmit').addEventListener('click', submitAdminPw);
+document.getElementById('adminPwInput').addEventListener('keydown', e => { if (e.key==='Enter') submitAdminPw(); });
+document.getElementById('btnAdminCancel').addEventListener('click', () => {
+  document.getElementById('adminModal').classList.add('hidden');
+  pendingAdminTab = null;
+});
+
+['picks','entries','leaderboard'].forEach(id => {
+  document.getElementById('tab-'+id).addEventListener('click', function() {
+    showPanel('panel-'+id); setActiveTab(this);
+    if (id==='entries') renderEntries();
+    if (id==='leaderboard') renderLeaderboard();
+  });
+});
+document.getElementById('tab-admin').addEventListener('click', function() {
+  requestAdmin(this);
+});
+
+if (isAdminMode) {
+  document.getElementById('tab-admin').style.display = '';
+  const al = document.getElementById('majorsAdminLink');
+  if (al) { al.classList.add('active'); al.style.opacity = '1'; }
+}
+
+const tournamentOver = new Date() > new Date('2026-07-19T23:59:59');
+if (tournamentOver) {
+  document.getElementById('tab-picks').style.display = 'none';
+  document.getElementById('panel-picks').classList.remove('active');
+  document.getElementById('tab-picks').classList.remove('active');
+}
+if (isAdminMode) {
+  document.getElementById('panel-picks').classList.remove('active');
+  document.getElementById('tab-picks').classList.remove('active');
+  requestAdmin(document.getElementById('tab-admin'));
+} else if (tournamentOver) {
+  document.getElementById('tab-leaderboard').classList.add('active');
+  document.getElementById('panel-leaderboard').classList.add('active');
+}
+
+loadAll().then(() => {
+  renderPickBracket();
+  renderEntries();
+  renderLeaderboard();
+  renderLockStatus();
+});
+</script>
+</body>
+</html>
