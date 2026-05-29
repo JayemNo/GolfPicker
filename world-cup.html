@@ -152,14 +152,19 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 
 .hidden { display: none !important; }
 
-/* LEADERBOARD TOOLTIP */
-.lb-tooltip { position: fixed; z-index: 500; background: white; border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,31,91,0.18); max-width: 560px; min-width: 340px; max-height: 440px; overflow-y: auto; pointer-events: none; }
-.tt-header { background: var(--primary); color: white; padding: 10px 16px; font-weight: 800; font-size: 0.9rem; border-radius: 10px 10px 0 0; position: sticky; top: 0; }
-.tt-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.tt-table th { background: #f0f4f8; padding: 5px 10px; text-align: left; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
-.tt-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+/* PICKS DETAIL MODAL */
+.picks-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 600; }
+.picks-modal { background: white; border-radius: 14px; width: 90%; max-width: 580px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+.picks-modal-header { background: var(--primary); color: white; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.picks-modal-header h3 { font-size: 1rem; font-weight: 800; margin: 0; }
+.picks-modal-close { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0 4px; opacity: 0.8; }
+.picks-modal-close:hover { opacity: 1; }
+.picks-modal-body { overflow-y: auto; flex: 1; }
+.tt-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.tt-table th { background: #f0f4f8; padding: 7px 14px; text-align: left; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); position: sticky; top: 0; }
+.tt-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .tt-table tr:last-child td { border-bottom: none; }
-.tt-rnd-hdr td { background: #eef1f7; font-weight: 800; font-size: 0.7rem; color: var(--primary); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 10px; }
+.tt-rnd-hdr td { background: #eef1f7; font-weight: 800; font-size: 0.7rem; color: var(--primary); letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 14px; }
 .tt-correct { color: #155724; font-weight: 700; }
 .tt-correct::before { content: '✓ '; }
 .tt-wrong { color: #721c24; font-weight: 700; }
@@ -167,7 +172,8 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .tt-no-pick { color: #aaa; font-style: italic; }
 .tt-pts { color: var(--green); font-weight: 800; }
 .tt-zero { color: #bbb; }
-.lb-row { cursor: default; }
+.lb-row { cursor: pointer; }
+.lb-row:hover { background: rgba(0,31,91,0.04); }
 
 @media (max-width: 600px) {
   .bk-round { width: 132px; }
@@ -659,17 +665,7 @@ function renderLeaderboard() {
       ${prize ? `<div class="lb-prize">${prize}</div>` : ''}
       <div class="lb-score">${e.score} <span style="font-size:0.72rem;color:var(--text-muted)">pts</span></div>
     `;
-    const tt = document.getElementById('lbTooltip');
-    row.addEventListener('mouseenter', () => {
-      tt.innerHTML = buildPickDetail(e);
-      tt.classList.remove('hidden');
-      const rect = row.getBoundingClientRect();
-      const x = rect.right + 12;
-      const y = rect.top;
-      tt.style.left = Math.min(x, window.innerWidth  - tt.offsetWidth  - 10) + 'px';
-      tt.style.top  = Math.min(y, window.innerHeight - tt.offsetHeight - 10) + 'px';
-    });
-    row.addEventListener('mouseleave', () => tt.classList.add('hidden'));
+    row.addEventListener('click', () => openPicksModal(e));
     body.appendChild(row);
   });
 }
@@ -708,7 +704,7 @@ function buildPickDetail(entry) {
         : `<span class="tt-no-pick">no pick</span>`;
       const ptsHtml  = pts > 0 ? `<span class="tt-pts">+${pts}</span>` : `<span class="tt-zero">0</span>`;
       rows += `<tr>
-        <td style="color:var(--text-muted);font-size:0.72rem;white-space:nowrap">${tA} vs ${tB}</td>
+        <td style="color:var(--text-muted);font-size:0.75rem;white-space:nowrap">${tA} vs ${tB}</td>
         <td>${pickHtml}</td>
         <td style="font-weight:700">${winner}</td>
         <td style="text-align:right">${ptsHtml}</td>
@@ -716,12 +712,17 @@ function buildPickDetail(entry) {
     });
   });
 
-  if (!hasAny) rows = `<tr><td colspan="4" style="padding:12px;color:#aaa;text-align:center">No results recorded yet.</td></tr>`;
+  if (!hasAny) rows = `<tr><td colspan="4" style="padding:16px;color:#aaa;text-align:center">No results recorded yet.</td></tr>`;
 
-  return `<div class="tt-header">${entry.name} &mdash; ${entry.score} pts</div>
-<table class="tt-table">
+  return `<table class="tt-table">
 <tr><th>Match</th><th>Your Pick</th><th>Winner</th><th style="text-align:right">Pts</th></tr>
 ${rows}</table>`;
+}
+
+function openPicksModal(entry) {
+  document.getElementById('picksModalTitle').textContent = entry.name + ' — ' + entry.score + ' pts';
+  document.getElementById('picksModalBody').innerHTML = buildPickDetail(entry);
+  document.getElementById('picksModal').classList.remove('hidden');
 }
 
 // ── Admin: bracket input grid ──────────────────────────────────
@@ -987,6 +988,10 @@ document.getElementById('btnAdminCancel').addEventListener('click', () => {
   pendingAdminTab = null;
 });
 
+const picksModal = document.getElementById('picksModal');
+document.getElementById('picksModalClose').addEventListener('click', () => picksModal.classList.add('hidden'));
+picksModal.addEventListener('click', e => { if (e.target === picksModal) picksModal.classList.add('hidden'); });
+
 ['picks','entries','leaderboard'].forEach(id => {
   document.getElementById('tab-'+id).addEventListener('click', function() {
     showPanel('panel-'+id); setActiveTab(this);
@@ -1027,6 +1032,14 @@ loadAll().then(() => {
   renderLockStatus();
 });
 </script>
-<div id="lbTooltip" class="lb-tooltip hidden"></div>
+<div id="picksModal" class="picks-modal-backdrop hidden">
+  <div class="picks-modal">
+    <div class="picks-modal-header">
+      <h3 id="picksModalTitle"></h3>
+      <button class="picks-modal-close" id="picksModalClose">&times;</button>
+    </div>
+    <div class="picks-modal-body" id="picksModalBody"></div>
+  </div>
+</div>
 </body>
 </html>
