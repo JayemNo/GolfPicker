@@ -80,6 +80,8 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .bk-conn-pair { display: flex; flex-direction: column; }
 .bk-conn-top { flex: 1; border-right: 2px solid #ccd0db; border-bottom: 2px solid #ccd0db; border-bottom-right-radius: 3px; }
 .bk-conn-bot { flex: 1; border-right: 2px solid #ccd0db; }
+.bk-conn-top-r { flex: 1; border-left: 2px solid #ccd0db; border-bottom: 2px solid #ccd0db; border-bottom-left-radius: 3px; }
+.bk-conn-bot-r { flex: 1; border-left: 2px solid #ccd0db; }
 
 /* FORM */
 .form-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -465,71 +467,74 @@ function renderPickBracket() {
     return;
   }
 
-  // Fixed total height: 16 units. Each unit = 56px.
   const UNIT = 56;
   const H    = 16 * UNIT; // 896px
 
-  ROUNDS.forEach((round, ri) => {
-    const n      = round.matches.length;
+  function makeRoundCol(label, matches) {
+    const n      = matches.length;
     const matchH = H / n;
-
-    // Round column
-    const col = document.createElement('div');
+    const col    = document.createElement('div');
     col.className = 'bk-round';
-
-    // Header
     const hdr = document.createElement('div');
     hdr.className = 'bk-round-hdr';
-    hdr.textContent = round.label;
+    hdr.textContent = label;
     col.appendChild(hdr);
-
-    // Matches
-    round.matches.forEach(mid => {
+    matches.forEach(mid => {
       const wrap = document.createElement('div');
       wrap.className = 'bk-match-wrap';
       wrap.style.height = matchH + 'px';
-
-      const tA = teamA(mid);
-      const tB = teamB(mid);
-      const picked = myPicks[mid] || null;
-      const resWinner = results[mid] || null;
-
       const card = document.createElement('div');
       card.className = 'bk-match';
-      card.appendChild(makeTeamBtn(mid, tA, picked, resWinner));
-      card.appendChild(makeTeamBtn(mid, tB, picked, resWinner));
-
+      card.appendChild(makeTeamBtn(mid, teamA(mid), myPicks[mid] || null, results[mid] || null));
+      card.appendChild(makeTeamBtn(mid, teamB(mid), myPicks[mid] || null, results[mid] || null));
       wrap.appendChild(card);
       col.appendChild(wrap);
     });
+    return col;
+  }
 
-    container.appendChild(col);
-
-    // Connector column (between rounds)
-    if (ri < ROUNDS.length - 1) {
-      const connCol = document.createElement('div');
-      connCol.className = 'bk-conn';
-
-      const nextN = ROUNDS[ri+1].matches.length;
-      const groupH = H / nextN; // height per connector group = 2 source matches
-
-      for (let g = 0; g < nextN; g++) {
-        const pair = document.createElement('div');
-        pair.className = 'bk-conn-pair';
-        pair.style.height = groupH + 'px';
-        const top = document.createElement('div');
-        top.className = 'bk-conn-top';
-        const bot = document.createElement('div');
-        bot.className = 'bk-conn-bot';
-        pair.appendChild(top);
-        pair.appendChild(bot);
-        connCol.appendChild(pair);
-      }
-      // Account for header offset
-      connCol.style.paddingTop = '30px';
-      container.appendChild(connCol);
+  function makeConn(nGroups, isRight) {
+    const groupH = H / nGroups;
+    const col    = document.createElement('div');
+    col.className = 'bk-conn';
+    col.style.paddingTop = '30px';
+    for (let g = 0; g < nGroups; g++) {
+      const pair = document.createElement('div');
+      pair.className = 'bk-conn-pair';
+      pair.style.height = groupH + 'px';
+      const top = document.createElement('div');
+      top.className = isRight ? 'bk-conn-top-r' : 'bk-conn-top';
+      const bot = document.createElement('div');
+      bot.className = isRight ? 'bk-conn-bot-r' : 'bk-conn-bot';
+      pair.appendChild(top);
+      pair.appendChild(bot);
+      col.appendChild(pair);
     }
-  });
+    return col;
+  }
+
+  // ── Left half: R32(1-8) → R16(17-20) → QF(25-26) → SF(29) ──
+  container.appendChild(makeRoundCol('Round of 32',   [1,2,3,4,5,6,7,8]));
+  container.appendChild(makeConn(4, false));
+  container.appendChild(makeRoundCol('Round of 16',   [17,18,19,20]));
+  container.appendChild(makeConn(2, false));
+  container.appendChild(makeRoundCol('Quarterfinals', [25,26]));
+  container.appendChild(makeConn(1, false));
+  container.appendChild(makeRoundCol('Semifinals',    [29]));
+  container.appendChild(makeConn(1, false));
+
+  // ── Center ──
+  container.appendChild(makeRoundCol('Final', [31]));
+
+  // ── Right half: SF(30) ← QF(27-28) ← R16(21-24) ← R32(9-16) ──
+  container.appendChild(makeConn(1, true));
+  container.appendChild(makeRoundCol('Semifinals',    [30]));
+  container.appendChild(makeConn(1, true));
+  container.appendChild(makeRoundCol('Quarterfinals', [27,28]));
+  container.appendChild(makeConn(2, true));
+  container.appendChild(makeRoundCol('Round of 16',   [21,22,23,24]));
+  container.appendChild(makeConn(4, true));
+  container.appendChild(makeRoundCol('Round of 32',   [9,10,11,12,13,14,15,16]));
 }
 
 function makeTeamBtn(matchId, team, picked, resWinner) {
