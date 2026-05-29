@@ -660,15 +660,14 @@ function renderLeaderboard() {
       <div class="lb-score">${e.score} <span style="font-size:0.72rem;color:var(--text-muted)">pts</span></div>
     `;
     const tt = document.getElementById('lbTooltip');
-    row.addEventListener('mouseenter', ev => {
+    row.addEventListener('mouseenter', () => {
       tt.innerHTML = buildPickDetail(e);
       tt.classList.remove('hidden');
-      tt.style.left = Math.min(ev.clientX + 16, window.innerWidth  - tt.offsetWidth  - 10) + 'px';
-      tt.style.top  = Math.min(ev.clientY + 12, window.innerHeight - tt.offsetHeight - 10) + 'px';
-    });
-    row.addEventListener('mousemove', ev => {
-      tt.style.left = Math.min(ev.clientX + 16, window.innerWidth  - tt.offsetWidth  - 10) + 'px';
-      tt.style.top  = Math.min(ev.clientY + 12, window.innerHeight - tt.offsetHeight - 10) + 'px';
+      const rect = row.getBoundingClientRect();
+      const x = rect.right + 12;
+      const y = rect.top;
+      tt.style.left = Math.min(x, window.innerWidth  - tt.offsetWidth  - 10) + 'px';
+      tt.style.top  = Math.min(y, window.innerHeight - tt.offsetHeight - 10) + 'px';
     });
     row.addEventListener('mouseleave', () => tt.classList.add('hidden'));
     body.appendChild(row);
