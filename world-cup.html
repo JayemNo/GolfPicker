@@ -293,7 +293,10 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
           Enter the two teams for each Round of 32 match after the group stage concludes. Match order should follow the official bracket draw.
         </p>
         <div class="bk-admin-grid" id="bracketAdminGrid"></div>
-        <button class="btn btn-primary btn-sm" id="btnSaveBracket" style="margin-top:14px">Save Bracket</button>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btnSaveBracket">Save Bracket</button>
+          <button class="btn btn-sm" id="btnRandomizeBracket" style="background:#5a6a7a;color:white">Randomize for Testing</button>
+        </div>
       </div>
 
       <div class="admin-section">
@@ -397,15 +400,20 @@ const isAdminMode = new URLSearchParams(window.location.search).has('admin');
 
 // ── API ────────────────────────────────────────────────────────
 function api(body) {
-  return fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify(body) }).then(r => r.json());
+  return fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify(body) })
+    .then(r => r.json())
+    .catch(err => { console.error('API error:', err); throw err; });
 }
 function loadAll() {
-  return fetch(SCRIPT_URL + '?action=get').then(r => r.json()).then(d => {
-    entries = d.entries || [];
-    results = d.results || {};
-    locked  = d.locked  || false;
-    bracket = d.bracket || {};
-  });
+  return fetch(SCRIPT_URL + '?action=get')
+    .then(r => r.json())
+    .then(d => {
+      entries = d.entries || [];
+      results = d.results || {};
+      locked  = d.locked  || false;
+      bracket = d.bracket || {};
+    })
+    .catch(err => console.warn('Could not reach backend:', err));
 }
 
 // ── Bracket helpers ────────────────────────────────────────────
@@ -662,6 +670,14 @@ function renderAdminBracketGrid() {
   }
 }
 
+function randomizeBracket() {
+  const shuffled = [...WORLD_CUP_TEAMS].sort(() => Math.random() - 0.5).slice(0, 32);
+  for (let i = 1; i <= 16; i++) {
+    document.getElementById('bm'+i+'a').value = shuffled[(i-1)*2];
+    document.getElementById('bm'+i+'b').value = shuffled[(i-1)*2+1];
+  }
+}
+
 // ── Admin: results grid ────────────────────────────────────────
 function renderAdminResultGrid() {
   const grid = document.getElementById('resultGrid');
@@ -764,10 +780,15 @@ function saveBracket() {
     b[i+'a'] = document.getElementById('bm'+i+'a').value;
     b[i+'b'] = document.getElementById('bm'+i+'b').value;
   }
-  api({ action:'setBracket', bracket:b }).then(res => {
-    if (res.ok) { bracket = b; renderPickBracket(); renderAdminResultGrid(); alert('Bracket saved!'); }
-    else alert('Error: ' + res.error);
-  });
+  bracket = b;
+  renderPickBracket();
+  renderAdminResultGrid();
+  api({ action:'setBracket', bracket:b })
+    .then(res => {
+      if (res.ok) alert('Bracket saved!');
+      else alert('Error: ' + res.error);
+    })
+    .catch(() => alert('Network error — check your SCRIPT_URL configuration.'));
 }
 
 function saveResults() {
@@ -879,6 +900,7 @@ updateCountdown();
 document.getElementById('btnSubmit').addEventListener('click', submitPicks);
 document.getElementById('btnLoad').addEventListener('click', loadEntry);
 document.getElementById('btnSaveBracket').addEventListener('click', saveBracket);
+document.getElementById('btnRandomizeBracket').addEventListener('click', randomizeBracket);
 document.getElementById('btnSaveResults').addEventListener('click', saveResults);
 document.getElementById('btnClearResults').addEventListener('click', clearResults);
 document.getElementById('btnClearAll').addEventListener('click', clearAll);
@@ -893,6 +915,7 @@ document.getElementById('btnAdminCancel').addEventListener('click', () => {
 ['picks','entries','leaderboard'].forEach(id => {
   document.getElementById('tab-'+id).addEventListener('click', function() {
     showPanel('panel-'+id); setActiveTab(this);
+    if (id==='picks') loadAll().then(renderPickBracket);
     if (id==='entries') renderEntries();
     if (id==='leaderboard') renderLeaderboard();
   });
