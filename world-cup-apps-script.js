@@ -137,15 +137,17 @@ function handleSaveEntry(entry) {
   }
 
   const sheet = entriesSheet();
-  const row   = entryToRow(entry);
   const existingRow = rowForName(entry.name);
   let updated = false;
 
   if (existingRow > 0) {
-    sheet.getRange(existingRow, 1, 1, row.length).setValues([row]);
+    // Preserve the existing paid status so a resubmit never clears it
+    const existingPaid = sheet.getRange(existingRow, 5).getValue();
+    entry.paid = existingPaid === true || String(existingPaid).toLowerCase() === 'true';
+    sheet.getRange(existingRow, 1, 1, ENTRY_HEADERS.length).setValues([entryToRow(entry)]);
     updated = true;
   } else {
-    sheet.appendRow(row);
+    sheet.appendRow(entryToRow(entry));
   }
 
   try {
