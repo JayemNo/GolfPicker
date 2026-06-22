@@ -224,7 +224,7 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
     <strong>🔒 Picks are locked</strong> — the knockout bracket has started and brackets are closed.
   </div>
   <div id="setupBanner" class="setup-banner hidden">
-    <strong>⏳ Bracket not set yet</strong> — the 32-team knockout bracket will be available once the group stage concludes (~July 2). Check back then!
+    <strong>⏳ Bracket not set yet</strong> — the 32-team knockout bracket will be available once the group stage concludes (~June 28). Check back then!
   </div>
 
   <div class="card">
@@ -968,13 +968,14 @@ function updateCountdown() {
   if (!el) return;
   const now      = new Date();
   const start    = new Date('2026-06-11T00:00:00');
-  const lockDate = new Date('2026-07-04T00:00:00');
+  const lockDate = new Date('2026-06-28T00:00:00');
   const end      = new Date('2026-07-19T23:59:59');
   if (now < start) {
     const days = Math.ceil((start - now) / 86400000);
     el.innerHTML = `Group stage starts in <span style="color:#ffd700">${days}</span> day${days===1?'':'s'}`;
   } else if (now < lockDate) {
-    el.innerHTML = 'Group stage underway · <span style="color:#ffd700">Submit your bracket before July 4</span>';
+    const days = Math.ceil((lockDate - now) / 86400000);
+    el.innerHTML = `Group stage underway · <span style="color:#ffd700">Submit your bracket — Round of 32 starts in ${days} day${days===1?'':'s'}</span>`;
   } else if (now <= end) {
     el.innerHTML = 'Knockout rounds underway · Bracket locked';
   } else {
