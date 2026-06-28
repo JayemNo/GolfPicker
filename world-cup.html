@@ -175,6 +175,22 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .lb-row { cursor: pointer; }
 .lb-row:hover { background: rgba(0,31,91,0.04); }
 
+/* LEADERBOARD HOVER BRACKET POPUP */
+.bk-hover-popup { position: fixed; z-index: 550; background: white; border: 1.5px solid var(--border); border-radius: 12px; box-shadow: 0 10px 36px rgba(0,31,91,0.22); padding: 14px; max-width: 94vw; max-height: 80vh; overflow: auto; }
+.bk-hover-header { font-weight: 800; font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.bk-hover-cols { display: flex; gap: 14px; }
+.bk-hover-col { display: flex; flex-direction: column; gap: 6px; min-width: 120px; flex-shrink: 0; }
+.bk-hover-col-hdr { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-bottom: 2px; }
+.bk-hover-match { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; position: relative; }
+.bk-hover-team { padding: 4px 8px; padding-right: 26px; font-size: 0.72rem; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-hover-team:last-child { border-bottom: none; }
+.bk-hover-team.tbd { color: #aaa; font-style: italic; font-weight: 400; }
+.bk-hover-team.picked { background: rgba(0,31,91,0.08); }
+.bk-hover-team.correct { background: #d4edda; color: #155724; }
+.bk-hover-team.wrong { background: #f8d7da; color: #721c24; text-decoration: line-through; }
+.bk-hover-pts { position: absolute; top: 3px; right: 6px; font-size: 0.62rem; font-weight: 800; color: var(--green); z-index: 1; }
+.bk-hover-pts.zero { color: #bbb; }
+
 @media (max-width: 600px) {
   .bk-round { width: 132px; }
   .bk-team { font-size: 0.72rem; padding: 6px 7px; min-height: 30px; }
@@ -356,6 +372,9 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
     </div>
   </div>
 </div>
+
+<!-- Leaderboard hover bracket popup -->
+<div id="lbBracketPopup" class="bk-hover-popup hidden"></div>
 
 <!-- Picks detail modal -->
 <div id="picksModal" class="picks-modal-backdrop hidden">
@@ -688,6 +707,8 @@ function renderLeaderboard() {
       <div class="lb-score">${e.score} <span style="font-size:0.72rem;color:var(--text-muted)">pts</span></div>
     `;
     row.addEventListener('click', () => openPicksModal(e));
+    row.addEventListener('mouseenter', () => showBracketPopup(e, row));
+    row.addEventListener('mouseleave', scheduleHideBracketPopup);
     body.appendChild(row);
   });
 }
@@ -745,6 +766,50 @@ function openPicksModal(entry) {
   document.getElementById('picksModalTitle').textContent = entry.name + ' — ' + entry.score + ' pts';
   document.getElementById('picksModalBody').innerHTML = buildPickDetail(entry);
   document.getElementById('picksModal').classList.remove('hidden');
+}
+
+// ── Leaderboard hover bracket popup ─────────────────────────────
+function buildPickBracketView(entry) {
+  const picks = entry.picks || {};
+
+  function teamHtml(team, pick, winner) {
+    if (!team || team === 'TBD') return `<div class="bk-hover-team tbd">TBD</div>`;
+    let cls = '';
+    if (pick === team) cls = winner ? (winner === team ? 'correct' : 'wrong') : 'picked';
+    return `<div class="bk-hover-team ${cls}">${team}</div>`;
+  }
+
+  const cols = ROUNDS.map(round => {
+    const matches = round.matches.map(mid => {
+      const tA = teamA(mid, picks), tB = teamB(mid, picks);
+      const raw    = results[mid] || null;
+      const winner = (raw === tA || raw === tB) ? raw : null;
+      const pick   = picks[mid] || null;
+      const pts    = winner ? (pick === winner ? round.points : 0) : null;
+      const ptsHtml = pts === null ? '' : `<span class="bk-hover-pts ${pts === 0 ? 'zero' : ''}">${pts > 0 ? '+' + pts : '0'}</span>`;
+      return `<div class="bk-hover-match">${ptsHtml}${teamHtml(tA, pick, winner)}${teamHtml(tB, pick, winner)}</div>`;
+    }).join('');
+    return `<div class="bk-hover-col"><div class="bk-hover-col-hdr">${round.label}</div>${matches}</div>`;
+  }).join('');
+
+  return `<div class="bk-hover-header">${entry.name} &mdash; ${entry.score} pts</div><div class="bk-hover-cols">${cols}</div>`;
+}
+
+let lbHoverHideTimer = null;
+function showBracketPopup(entry, row) {
+  clearTimeout(lbHoverHideTimer);
+  const pop = document.getElementById('lbBracketPopup');
+  pop.innerHTML = buildPickBracketView(entry);
+  pop.classList.remove('hidden');
+  const rect = row.getBoundingClientRect();
+  pop.style.left = Math.max(10, Math.min(rect.left, window.innerWidth  - pop.offsetWidth  - 10)) + 'px';
+  pop.style.top  = Math.max(10, Math.min(rect.bottom + 6, window.innerHeight - pop.offsetHeight - 10)) + 'px';
+}
+function scheduleHideBracketPopup() {
+  clearTimeout(lbHoverHideTimer);
+  lbHoverHideTimer = setTimeout(() => {
+    document.getElementById('lbBracketPopup').classList.add('hidden');
+  }, 250);
 }
 
 // ── Admin: bracket input grid ──────────────────────────────────
@@ -1012,6 +1077,10 @@ document.getElementById('btnAdminCancel').addEventListener('click', () => {
 const picksModal = document.getElementById('picksModal');
 document.getElementById('picksModalClose').addEventListener('click', () => picksModal.classList.add('hidden'));
 picksModal.addEventListener('click', e => { if (e.target === picksModal) picksModal.classList.add('hidden'); });
+
+const lbBracketPopup = document.getElementById('lbBracketPopup');
+lbBracketPopup.addEventListener('mouseenter', () => clearTimeout(lbHoverHideTimer));
+lbBracketPopup.addEventListener('mouseleave', scheduleHideBracketPopup);
 
 ['picks','entries','leaderboard'].forEach(id => {
   document.getElementById('tab-'+id).addEventListener('click', function() {
