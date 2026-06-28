@@ -315,7 +315,7 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
       <div class="admin-section">
         <div class="admin-section-title">Set Knockout Bracket (32 Teams)</div>
         <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
-          Enter the two teams for each Round of 32 match after the group stage concludes. Match order should follow the official bracket draw.
+          Enter the two teams for each Round of 32 match in official FIFA schedule order — <strong>Match 1 = FIFA Match 73</strong>, Match 2 = FIFA Match 74, and so on through Match 16 = FIFA Match 88. The bracket's knockout pairings (who plays whom in the Round of 16, Quarterfinals, etc.) are hard-coded to follow this exact official order, so entering teams out of sequence will scramble the bracket.
         </p>
         <div class="bk-admin-grid" id="bracketAdminGrid"></div>
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
@@ -404,12 +404,14 @@ const ROUNDS = [
   { id:'f',   label:'Final',         matches:[31],                                        points:16 }
 ];
 
-// Which two matches feed into each later-round match
+// Which two matches feed into each later-round match.
+// Mirrors FIFA's official bracket (local match N = official FIFA match 72+N),
+// per the published Round of 32 → Final draw — NOT simple sequential pairing.
 const PARENTS = {
-  17:[1,2],  18:[3,4],  19:[5,6],  20:[7,8],
-  21:[9,10], 22:[11,12],23:[13,14],24:[15,16],
-  25:[17,18],26:[19,20],27:[21,22],28:[23,24],
-  29:[25,26],30:[27,28],
+  17:[2,5],   18:[1,3],   19:[4,6],   20:[7,8],
+  21:[11,12], 22:[9,10],  23:[14,16], 24:[13,15],
+  25:[17,18], 26:[21,22], 27:[19,20], 28:[23,24],
+  29:[25,26], 30:[27,28],
   31:[29,30]
 };
 
@@ -547,10 +549,13 @@ function renderPickBracket() {
     return col;
   }
 
-  // ── Left half: R32(1-8) → R16(17-20) → QF(25-26) → SF(29) ──
-  container.appendChild(makeRoundCol('Round of 32',   [1,2,3,4,5,6,7,8]));
+  // Leaf order on each side follows the official FIFA bracket tree (see
+  // PARENTS) traced back from the Final — it is NOT the naive 1-8 / 9-16 split.
+  // Left half feeds Semifinal 29, right half feeds Semifinal 30.
+  // ── Left half: R32 → R16(17,18,21,22) → QF(25,26) → SF(29) ──
+  container.appendChild(makeRoundCol('Round of 32',   [2,5,1,3,11,12,9,10]));
   container.appendChild(makeConn(4, false));
-  container.appendChild(makeRoundCol('Round of 16',   [17,18,19,20]));
+  container.appendChild(makeRoundCol('Round of 16',   [17,18,21,22]));
   container.appendChild(makeConn(2, false));
   container.appendChild(makeRoundCol('Quarterfinals', [25,26]));
   container.appendChild(makeConn(1, false));
@@ -560,15 +565,15 @@ function renderPickBracket() {
   // ── Center ──
   container.appendChild(makeRoundCol('Final', [31]));
 
-  // ── Right half: SF(30) ← QF(27-28) ← R16(21-24) ← R32(9-16) ──
+  // ── Right half: SF(30) ← QF(27,28) ← R16(19,20,23,24) ← R32 ──
   container.appendChild(makeConn(1, true));
   container.appendChild(makeRoundCol('Semifinals',    [30]));
   container.appendChild(makeConn(1, true));
   container.appendChild(makeRoundCol('Quarterfinals', [27,28]));
   container.appendChild(makeConn(2, true));
-  container.appendChild(makeRoundCol('Round of 16',   [21,22,23,24]));
+  container.appendChild(makeRoundCol('Round of 16',   [19,20,23,24]));
   container.appendChild(makeConn(4, true));
-  container.appendChild(makeRoundCol('Round of 32',   [9,10,11,12,13,14,15,16]));
+  container.appendChild(makeRoundCol('Round of 32',   [4,6,7,8,14,16,13,15]));
 }
 
 function makeTeamBtn(matchId, team, picked, resWinner) {
