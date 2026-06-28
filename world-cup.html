@@ -64,8 +64,9 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .bracket { display: flex; gap: 0; }
 .bk-round { display: flex; flex-direction: column; flex-shrink: 0; width: 168px; }
 .bk-round-hdr { text-align: center; font-size: 0.67rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--primary); padding: 4px 0 10px; height: 30px; white-space: nowrap; }
-.bk-match-wrap { display: flex; align-items: center; padding: 3px 5px; }
+.bk-match-wrap { display: flex; align-items: center; padding: 3px 5px; position: relative; }
 .bk-match { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.bk-lock-badge { position: absolute; top: -5px; right: 1px; font-size: 0.7rem; background: white; border: 1px solid var(--border); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 2; }
 .bk-team { display: flex; align-items: center; padding: 8px 10px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text); transition: background 0.1s, color 0.1s; border: none; background: transparent; width: 100%; text-align: left; font-family: 'Source Sans 3', sans-serif; line-height: 1.2; min-height: 36px; }
 .bk-team:first-child { border-bottom: 1px solid var(--border); }
 .bk-team:hover:not(:disabled) { background: rgba(0,31,91,0.07); }
@@ -263,7 +264,7 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
   <div class="card">
     <div class="card-header">
       <h2>Your Bracket</h2>
-      <p>Click a team name to advance them. Matchups still TBD will appear once the bracket is set — you can submit anytime, even with picks still pending.</p>
+      <p>Click a team name to advance them. Matchups still TBD will appear once the bracket is set — you can submit anytime, even with picks still pending. Each match's pick locks individually at noon ET on the day it's played (🔒), so you can keep changing picks for later matches even after earlier ones lock.</p>
     </div>
     <div class="card-body" style="padding:12px 8px">
       <div class="bracket-container">
@@ -444,6 +445,32 @@ function matchLabel(id) {
   return `QF Match ${id-24}`;
 }
 
+// Official kickoff date for each match (local match N = FIFA match 72+N),
+// per the published 2026 schedule. Used to lock each pick individually at
+// noon Eastern on the day that match is played, rather than locking the
+// whole bracket at once.
+const MATCH_DATES = {
+  1:'2026-06-28',  2:'2026-06-29',  3:'2026-06-29',  4:'2026-06-29',
+  5:'2026-06-30',  6:'2026-06-30',  7:'2026-07-01',  8:'2026-07-01',
+  9:'2026-07-01',  10:'2026-07-02', 11:'2026-07-02', 12:'2026-07-03',
+  13:'2026-07-03', 14:'2026-07-03', 15:'2026-07-03', 16:'2026-07-04',
+  17:'2026-07-04', 18:'2026-07-04', 19:'2026-07-05', 20:'2026-07-05',
+  21:'2026-07-06', 22:'2026-07-06', 23:'2026-07-07', 24:'2026-07-07',
+  25:'2026-07-09', 26:'2026-07-10', 27:'2026-07-11', 28:'2026-07-11',
+  29:'2026-07-14', 30:'2026-07-15',
+  31:'2026-07-19'
+};
+// Noon Eastern (UTC-4, in effect for the tournament's June–July window) on
+// the match's date — picks for that match can't change after this.
+function matchLockTime(matchId) {
+  const d = MATCH_DATES[matchId];
+  return d ? new Date(d + 'T12:00:00-04:00') : null;
+}
+function isMatchLocked(matchId) {
+  const t = matchLockTime(matchId);
+  return t ? new Date() >= t : false;
+}
+
 // ── State ──────────────────────────────────────────────────────
 let bracket  = {};  // { "1a":"France", "1b":"Senegal", ... }
 let myPicks  = {};  // { 1:"France", 2:"Spain", ... }  numeric keys
@@ -549,6 +576,13 @@ function renderPickBracket() {
       card.appendChild(makeTeamBtn(mid, tA, myPicks[mid] || null, resWinner));
       card.appendChild(makeTeamBtn(mid, tB, myPicks[mid] || null, resWinner));
       wrap.appendChild(card);
+      if (!resWinner && !locked && isMatchLocked(mid)) {
+        const lockBadge = document.createElement('div');
+        lockBadge.className = 'bk-lock-badge';
+        lockBadge.textContent = '🔒';
+        lockBadge.title = 'Picks for this match locked at noon ET on game day';
+        wrap.appendChild(lockBadge);
+      }
       col.appendChild(wrap);
     });
     return col;
@@ -616,9 +650,10 @@ function makeTeamBtn(matchId, team, picked, resWinner) {
         btn.classList.add(resWinner === team ? 'correct' : 'wrong');
       }
       btn.disabled = true;
-    } else if (locked) {
+    } else if (locked || isMatchLocked(matchId)) {
       if (picked === team) btn.classList.add('selected');
       btn.disabled = true;
+      btn.title = 'Picks for this match locked at noon ET on game day';
     } else {
       if (picked === team) btn.classList.add('selected');
       btn.addEventListener('click', () => pickTeam(matchId, team));

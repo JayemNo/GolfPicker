@@ -24,6 +24,26 @@ const NOTIFY_EMAIL       = 'jayemn@gmail.com';
 // Entries columns: name | email | picks (JSON) | ts | paid
 const ENTRY_HEADERS = ['name', 'email', 'picks', 'ts', 'paid'];
 
+// Official kickoff date for each match (local match N = FIFA match 72+N),
+// mirrors MATCH_DATES in world-cup.html. Each match's pick locks at noon
+// Eastern (UTC-4) on its game day — keep this in sync with the frontend.
+const MATCH_DATES = {
+  1:'2026-06-28',  2:'2026-06-29',  3:'2026-06-29',  4:'2026-06-29',
+  5:'2026-06-30',  6:'2026-06-30',  7:'2026-07-01',  8:'2026-07-01',
+  9:'2026-07-01',  10:'2026-07-02', 11:'2026-07-02', 12:'2026-07-03',
+  13:'2026-07-03', 14:'2026-07-03', 15:'2026-07-03', 16:'2026-07-04',
+  17:'2026-07-04', 18:'2026-07-04', 19:'2026-07-05', 20:'2026-07-05',
+  21:'2026-07-06', 22:'2026-07-06', 23:'2026-07-07', 24:'2026-07-07',
+  25:'2026-07-09', 26:'2026-07-10', 27:'2026-07-11', 28:'2026-07-11',
+  29:'2026-07-14', 30:'2026-07-15',
+  31:'2026-07-19'
+};
+function isMatchLocked(matchId) {
+  const d = MATCH_DATES[matchId];
+  if (!d) return false;
+  return new Date() >= new Date(d + 'T12:00:00-04:00');
+}
+
 // ── Sheet helpers ──────────────────────────────────────────────
 
 function getOrCreateSheet(name, headers) {
@@ -139,11 +159,31 @@ function handleSaveEntry(entry) {
   const sheet = entriesSheet();
   const existingRow = rowForName(entry.name);
   let updated = false;
+  let existingPicks = {};
 
   if (existingRow > 0) {
+    const existingRowVals = sheet.getRange(existingRow, 1, 1, ENTRY_HEADERS.length).getValues()[0];
+    existingPicks = existingRowVals[2] ? JSON.parse(existingRowVals[2]) : {};
     // Preserve the existing paid status so a resubmit never clears it
-    const existingPaid = sheet.getRange(existingRow, 5).getValue();
+    const existingPaid = existingRowVals[4];
     entry.paid = existingPaid === true || String(existingPaid).toLowerCase() === 'true';
+  }
+
+  // Enforce per-match lock: once a match's kickoff cutoff has passed, its
+  // pick can no longer change — keep whatever was already saved for it
+  // (or leave it unset if it was never picked before the lock).
+  const incomingPicks = entry.picks || {};
+  const finalPicks = {};
+  for (const mid of Object.keys(MATCH_DATES)) {
+    if (isMatchLocked(mid)) {
+      if (existingPicks[mid] !== undefined) finalPicks[mid] = existingPicks[mid];
+    } else if (incomingPicks[mid] !== undefined) {
+      finalPicks[mid] = incomingPicks[mid];
+    }
+  }
+  entry.picks = finalPicks;
+
+  if (existingRow > 0) {
     sheet.getRange(existingRow, 1, 1, ENTRY_HEADERS.length).setValues([entryToRow(entry)]);
     updated = true;
   } else {
