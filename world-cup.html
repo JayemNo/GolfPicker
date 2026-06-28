@@ -993,17 +993,22 @@ function saveResults() {
     const mid = Number(sel.id.replace('res',''));
     if (sel.value) r[mid] = sel.value;
   });
-  api({ action:'setResults', results:r }).then(res => {
-    if (res.ok) { results = r; renderLeaderboard(); renderAdminResultGrid(); alert('Results saved!'); }
-    else alert('Error: ' + res.error);
-  });
+  api({ action:'setResults', results:r })
+    .then(res => {
+      if (res.ok) { results = r; renderLeaderboard(); renderAdminResultGrid(); alert('Results saved!'); }
+      else alert('Error: ' + res.error);
+    })
+    .catch(() => alert('Network error — results were NOT saved. Please try again.'));
 }
 
 function clearResults() {
   if (!confirm('Clear all match results?')) return;
-  api({ action:'setResults', results:{} }).then(res => {
-    if (res.ok) { results = {}; renderLeaderboard(); renderAdminResultGrid(); }
-  });
+  api({ action:'setResults', results:{} })
+    .then(res => {
+      if (res.ok) { results = {}; renderLeaderboard(); renderAdminResultGrid(); }
+      else alert('Error: ' + res.error);
+    })
+    .catch(() => alert('Network error — results were NOT cleared. Please try again.'));
 }
 
 function toggleLock() {
