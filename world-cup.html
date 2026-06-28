@@ -521,8 +521,14 @@ function renderPickBracket() {
       wrap.style.height = matchH + 'px';
       const card = document.createElement('div');
       card.className = 'bk-match';
-      card.appendChild(makeTeamBtn(mid, teamA(mid), myPicks[mid] || null, results[mid] || null));
-      card.appendChild(makeTeamBtn(mid, teamB(mid), myPicks[mid] || null, results[mid] || null));
+      const tA = teamA(mid), tB = teamB(mid);
+      // A result only counts if it actually matches one of this match's
+      // current teams — guards against stale results left over from an
+      // earlier bracket configuration (e.g. after re-saving the bracket).
+      const rawResult = results[mid] || null;
+      const resWinner = (rawResult === tA || rawResult === tB) ? rawResult : null;
+      card.appendChild(makeTeamBtn(mid, tA, myPicks[mid] || null, resWinner));
+      card.appendChild(makeTeamBtn(mid, tB, myPicks[mid] || null, resWinner));
       wrap.appendChild(card);
       col.appendChild(wrap);
     });
