@@ -247,7 +247,7 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
   <div class="card">
     <div class="card-header">
       <h2>Your Bracket</h2>
-      <p>Click a team name to advance them. Fill out all 31 matches to submit.</p>
+      <p>Click a team name to advance them. Matchups still TBD will appear once the bracket is set — you can submit anytime, even with picks still pending.</p>
     </div>
     <div class="card-body" style="padding:12px 8px">
       <div class="bracket-container">
@@ -690,8 +690,8 @@ function fmtBreakdown(bd) {
 }
 
 function getMatchTeams(mid) {
-  if (mid <= 16) return [bracket[mid+'a'] || '?', bracket[mid+'b'] || '?'];
-  return [results[PARENTS[mid][0]] || '?', results[PARENTS[mid][1]] || '?'];
+  if (mid <= 16) return [bracket[mid+'a'] || 'TBD', bracket[mid+'b'] || 'TBD'];
+  return [results[PARENTS[mid][0]] || 'TBD', results[PARENTS[mid][1]] || 'TBD'];
 }
 
 function buildPickDetail(entry) {
@@ -831,8 +831,6 @@ function submitPicks() {
   const email = document.getElementById('inputEmail').value.trim();
   if (!name) { alert('Please enter your name.'); return; }
   if (locked) { alert('The pool is locked — picks are closed.'); return; }
-  const n = Object.keys(myPicks).length;
-  if (n < 31 && !confirm(`You've filled in ${n}/31 matches. Submit an incomplete bracket?`)) return;
   const btn = document.getElementById('btnSubmit');
   btn.disabled = true; btn.textContent = 'Submitting…';
   api({ action:'saveEntry', entry:{ name, email, picks:myPicks, ts:new Date().toISOString(), paid:false }})
