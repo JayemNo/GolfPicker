@@ -868,12 +868,16 @@ function teamOptions(selected) {
 }
 
 function renderAdminBracketGrid() {
+  const MON = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const grid = document.getElementById('bracketAdminGrid');
   grid.innerHTML = '';
   for (let i = 1; i <= 16; i++) {
+    const d = MATCH_DATES[i];
+    let datePart = '';
+    if (d) { const [,mo,dy] = d.split('-'); datePart = ` · ${MON[+mo]} ${+dy}`; }
     const div = document.createElement('div');
     div.className = 'bk-admin-match';
-    div.innerHTML = `<label>Match ${i}</label>
+    div.innerHTML = `<label>Match ${i} <span style="font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0">FIFA #${i+72}${datePart}</span></label>
       <select id="bm${i}a">${teamOptions(bracket[i+'a']||'')}</select>
       <select id="bm${i}b">${teamOptions(bracket[i+'b']||'')}</select>`;
     grid.appendChild(div);
