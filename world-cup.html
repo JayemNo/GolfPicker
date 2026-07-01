@@ -75,6 +75,7 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .bk-team.wrong { background: #f8d7da; color: #721c24; text-decoration: line-through; opacity: 0.7; }
 .bk-team.tbd { color: var(--text-muted); font-style: italic; font-size: 0.72rem; cursor: default; }
 .bk-team:disabled { cursor: default; }
+.bk-match-info { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-align: center; padding: 2px 4px; background: var(--bg); border-bottom: 1px solid var(--border); letter-spacing: 0.05em; text-transform: uppercase; }
 
 /* Bracket connectors */
 .bk-conn { flex-shrink: 0; width: 18px; display: flex; flex-direction: column; }
@@ -452,7 +453,7 @@ function matchLabel(id) {
 const MATCH_DATES = {
   1:'2026-06-28',  2:'2026-06-29',  3:'2026-06-29',  4:'2026-06-29',
   5:'2026-06-30',  6:'2026-06-30',  7:'2026-07-01',  8:'2026-07-01',
-  9:'2026-07-01',  10:'2026-07-02', 11:'2026-07-02', 12:'2026-07-03',
+  9:'2026-07-01',  10:'2026-07-01', 11:'2026-07-02', 12:'2026-07-03',
   13:'2026-07-03', 14:'2026-07-03', 15:'2026-07-03', 16:'2026-07-04',
   17:'2026-07-04', 18:'2026-07-04', 19:'2026-07-05', 20:'2026-07-05',
   21:'2026-07-06', 22:'2026-07-06', 23:'2026-07-07', 24:'2026-07-07',
@@ -573,6 +574,17 @@ function renderPickBracket() {
       // earlier bracket configuration (e.g. after re-saving the bracket).
       const rawResult = results[mid] || null;
       const resWinner = (rawResult === tA || rawResult === tB) ? rawResult : null;
+      const infoBar = document.createElement('div');
+      infoBar.className = 'bk-match-info';
+      const md = MATCH_DATES[mid];
+      let dateLabel = '';
+      if (md) {
+        const [,mo,dy] = md.split('-');
+        const MON = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        dateLabel = MON[+mo] + ' ' + +dy + ' · ';
+      }
+      infoBar.textContent = dateLabel + 'FIFA #' + (mid + 72);
+      card.appendChild(infoBar);
       card.appendChild(makeTeamBtn(mid, tA, myPicks[mid] || null, resWinner));
       card.appendChild(makeTeamBtn(mid, tB, myPicks[mid] || null, resWinner));
       wrap.appendChild(card);
