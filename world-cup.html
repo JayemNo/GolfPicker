@@ -137,7 +137,11 @@ body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: v
 .bk-admin-match label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
 .bk-admin-match select { width: 100%; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: 'Source Sans 3', sans-serif; outline: none; margin-bottom: 4px; background: white; }
 .bk-admin-match select:focus { border-color: var(--primary); }
-.result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.result-grid { }
+.result-round-hdr { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: white; background: var(--primary); padding: 6px 12px; border-radius: 6px; margin: 18px 0 10px; }
+.result-round-hdr:first-child { margin-top: 0; }
+.result-date-hdr { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 10px 0 6px; padding-left: 2px; border-left: 3px solid var(--gold); padding-left: 8px; }
+.result-date-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 4px; }
 .result-item { background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; }
 .result-item label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
 .result-item select { width: 100%; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.82rem; font-family: 'Source Sans 3', sans-serif; outline: none; }
@@ -894,6 +898,7 @@ function randomizeBracket() {
 
 // ── Admin: results grid ────────────────────────────────────────
 function renderAdminResultGrid() {
+  const MON = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const grid = document.getElementById('resultGrid');
   grid.innerHTML = '';
   const noBracket = Object.keys(bracket).length === 0;
@@ -903,20 +908,60 @@ function renderAdminResultGrid() {
   }
 
   ROUNDS.forEach(round => {
+    // Build list of playable matches with their teams
+    const matchList = [];
     round.matches.forEach(mid => {
       const tA = mid <= 16 ? bracket[mid+'a'] : results[PARENTS[mid][0]] || '';
       const tB = mid <= 16 ? bracket[mid+'b'] : results[PARENTS[mid][1]] || '';
       if (!tA && !tB) return;
-      const cur = results[mid] || '';
-      const div = document.createElement('div');
-      div.className = 'result-item';
-      div.innerHTML = `<label>${matchLabel(mid)}</label>
-        <select id="res${mid}">
-          <option value="">— no result —</option>
-          ${tA ? `<option value="${tA}" ${cur===tA?'selected':''}>${tA}</option>` : ''}
-          ${tB ? `<option value="${tB}" ${cur===tB?'selected':''}>${tB}</option>` : ''}
-        </select>`;
-      grid.appendChild(div);
+      matchList.push({ mid, tA, tB });
+    });
+    if (!matchList.length) return;
+
+    // Round header
+    const roundHdr = document.createElement('div');
+    roundHdr.className = 'result-round-hdr';
+    roundHdr.textContent = round.label + ' — ' + round.points + ' pt' + (round.points > 1 ? 's' : '') + ' each';
+    grid.appendChild(roundHdr);
+
+    // Group matches by date
+    const byDate = {};
+    const dateOrder = [];
+    matchList.forEach(({ mid, tA, tB }) => {
+      const d = MATCH_DATES[mid] || 'TBD';
+      if (!byDate[d]) { byDate[d] = []; dateOrder.push(d); }
+      byDate[d].push({ mid, tA, tB });
+    });
+
+    dateOrder.forEach(d => {
+      // Date sub-header
+      const dateHdr = document.createElement('div');
+      dateHdr.className = 'result-date-hdr';
+      if (d !== 'TBD') {
+        const [,mo,dy] = d.split('-');
+        const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(d).getDay()];
+        dateHdr.textContent = `${dow}, ${MON[+mo]} ${+dy}`;
+      } else {
+        dateHdr.textContent = 'Date TBD';
+      }
+      grid.appendChild(dateHdr);
+
+      // Match cards for this date
+      const group = document.createElement('div');
+      group.className = 'result-date-group';
+      byDate[d].forEach(({ mid, tA, tB }) => {
+        const cur = results[mid] || '';
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = `<label>${matchLabel(mid)}</label>
+          <select id="res${mid}">
+            <option value="">— no result —</option>
+            ${tA ? `<option value="${tA}" ${cur===tA?'selected':''}>${tA}</option>` : ''}
+            ${tB ? `<option value="${tB}" ${cur===tB?'selected':''}>${tB}</option>` : ''}
+          </select>`;
+        group.appendChild(div);
+      });
+      grid.appendChild(group);
     });
   });
 }
