@@ -839,14 +839,38 @@ function renderLeaderboard() {
   </div>`;
   const paidScored = scored.filter(s => s.paid);
   const unpaidScored = scored.filter(s => !s.paid);
-  const paidRows = paidScored.map((s,i) =>
-    `<div class="lb-row ${i<3?'r'+(i+1):''}">
-      <div class="lb-rank">${medals[i]||i+1}</div>
-      <div class="lb-name">${esc(s.name)}${i<3?` <span style="font-size:0.85rem;color:var(--gold);font-weight:700;margin-left:6px;">$${prizes[i]||0}</span>`:''} <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span></div>
+
+  // Assign ranks and split prizes across tied entries
+  const rankedPaid = (() => {
+    const out = [];
+    let pos = 0;
+    while (pos < paidScored.length) {
+      let end = pos + 1;
+      while (end < paidScored.length &&
+             paidScored[end].total === paidScored[pos].total &&
+             paidScored[end].marginDiff === paidScored[pos].marginDiff) end++;
+      const rank = pos + 1;
+      const blockSize = end - pos;
+      let pool = 0;
+      for (let k = pos; k < end; k++) pool += (prizes[k] || 0);
+      const split = Math.round(pool / blockSize);
+      for (let k = pos; k < end; k++) out.push({ ...paidScored[k], rank, prize: split });
+      pos = end;
+    }
+    return out;
+  })();
+
+  const paidRows = rankedPaid.map(s => {
+    const medal = medals[s.rank - 1] || s.rank;
+    const rowCls = s.rank <= 3 ? 'r' + s.rank : '';
+    const prizeHtml = s.prize > 0 ? ` <span style="font-size:0.85rem;color:var(--gold);font-weight:700;margin-left:6px;">$${s.prize}</span>` : '';
+    return `<div class="lb-row ${rowCls}">
+      <div class="lb-rank">${medal}</div>
+      <div class="lb-name">${esc(s.name)}${prizeHtml} <span style="background:#e8f5ee;border:1px solid #b7d9c4;border-radius:5px;padding:2px 8px;font-size:0.75rem;color:var(--correct);font-weight:700;margin-left:6px;">✓ PAID</span></div>
       <div class="lb-pts">${s.total}</div>
       <div class="lb-breakdown">W:${s.w} · S:${s.s} · R:${s.r} · Pos:${s.p}${results.margin!=null?' · Margin off:'+s.marginDiff:''}</div>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
   const unpaidSection = unpaidScored.length ? `
     <div style="padding:10px 20px;background:#3d1a1a;border-top:2px solid #8b2020;display:flex;align-items:center;gap:10px;">
       <span style="color:rgba(255,200,200,0.7);font-size:0.9rem;">⏳ Awaiting Payment</span>
